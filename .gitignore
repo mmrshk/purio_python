@@ -1,0 +1,8 @@
+/auchan/**/*
+/open_food_facts/**/*
+
+/venv/
+/venv/**/*/
+/__pycache__/*
+
+.DS_Store
