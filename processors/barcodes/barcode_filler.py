@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from barcode_processor import BarcodeProcessor
+from processors.barcodes.barcode_processor import BarcodeProcessor
 import requests
 import ast
 

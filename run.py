@@ -1,16 +1,16 @@
-from processors.scraper.collect_links import LinkCollector
+from processors.scraper.collect_links_v2 import LinkCollectorV2
 from processors.scraper.auchan_scraper import AuchanScraper
 import os
 
 def main():
     # Initialize collectors
-    link_collector = LinkCollector()
+    link_collector = LinkCollectorV2()
     scraper = AuchanScraper()
     
     # Category URL to scrape
     # category_url = "https://www.auchan.ro/bacanie/ceai-si-cafea/cafea-macinata/c"
     # category_url = "https://www.auchan.ro/lactate-carne-mezeluri---peste/mezeluri/c"
-    category_url = "https://www.auchan.ro/lactate-carne-mezeluri---peste/carne/carne-de-pasare/c"
+    category_url = "https://www.auchan.ro/bacanie/dulciuri/batoane-ciocolata/c"
     # category_url = "https://www.auchan.ro/bacanie/dulciuri/prajituri-fursecuri-si-piscoturi/c"
     # category_url = "https://www.auchan.ro/lactate-carne-mezeluri---peste/lactate/branza-si-telemea/c"
     # category_url = "https://www.auchan.ro/lactate-carne-mezeluri---peste/carne/carne-de-pasare/c"
