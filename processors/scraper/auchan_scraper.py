@@ -183,7 +183,9 @@ class AuchanScraper:
                 'image_urls': [],
                 'image_paths': [],
                 'specifications': {},
-                'nutritional_info': {}
+                'nutritional_info': {},
+                'category': self.category_dir if self.category_dir else '',
+                'external_id': ''
             }
             
             # Get product name
@@ -237,7 +239,18 @@ class AuchanScraper:
                     if spec_name == 'Ingrediente':
                         product_data['ingredients'] = spec_value
             
+            # Extract external_id (Cod produs) from the product details section
+            try:
+                prod_id_container = soup.find('span', class_='vtex-product-identifier-0-x-product-identifier--productId')
+                if prod_id_container:
+                    value_span = prod_id_container.find('span', class_='vtex-product-identifier-0-x-product-identifier__value')
+                    if value_span:
+                        product_data['external_id'] = value_span.text.strip()
+            except Exception as e:
+                print(f"Error extracting external_id: {e}")
+            
             # Print the scraped data for verification
+            print(f"External ID: {product_data['external_id']}")
             print(f"Name: {product_data['name']}")
             print(f"Price: {product_data['price']}")
             print(f"Number of images found: {len(product_data['image_paths'])}")

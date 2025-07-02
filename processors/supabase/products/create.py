@@ -135,6 +135,10 @@ def validate_record(record):
         if field in record:
             validated[field] = str(record[field]) if record[field] is not None else None
     
+    # Integer fields
+    if 'health_score' in record:
+        validated['health_score'] = int(record['health_score']) if record['health_score'] is not None else None
+    
     # Array field
     if 'additional_images_urls' in record:
         validated['additional_images_urls'] = [str(url) for url in record['additional_images_urls']] if record['additional_images_urls'] else []
@@ -207,7 +211,10 @@ def process_csv_for_supabase(csv_path):
                 'image_front_url': row['image_urls'][0] if row['image_urls'] else None,
                 'additional_images_urls': row['image_urls'][1:] if len(row['image_urls']) > 1 else [],
                 'specifications': row['specifications'],
-                'nutritional': row['nutritional_info']
+                'nutritional': row['nutritional_info'],
+                'health_score': row.get('health_score'),
+                'external_id': row.get('external_id'),
+                
             }
             
             # Check if product already exists
