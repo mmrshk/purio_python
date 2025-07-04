@@ -29,7 +29,6 @@ def get_ean_from_auchan_api(product_url=None, external_id=None):
     Try to get EAN from Auchan API using external_id (productId) if available, otherwise fallback to slug or HTML scraping.
     """
     try:
-        # If external_id is provided, use it directly
         if external_id:
             api_url = f"https://www.auchan.ro/api/catalog_system/pub/products/search?fq=productId:{external_id}"
             resp = requests.get(api_url, timeout=5)
@@ -46,7 +45,7 @@ def get_ean_from_auchan_api(product_url=None, external_id=None):
         print(f"Auchan API error for product: {e}")
         return None
 
-def fill_barcodes_in_csv(csv_path, images_base_dir):
+def fill_barcodes_in_csv(csv_path, images_base_dir=None):
     df = pd.read_csv(csv_path)
     if 'barcode' not in df.columns:
         df['barcode'] = ''
