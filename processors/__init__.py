@@ -1,3 +1,1 @@
-"""
-Food Facts Data Collection - Processors Package
-""" 
+# Existing content or empty file to ensure package recognition 
