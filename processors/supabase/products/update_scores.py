@@ -19,7 +19,7 @@ def calculate_final_health_score(nutri, additives, nova):
 
 def update_all_scores():
     # Fetch all products from Supabase
-    result = supabase.table('Products').select('*').execute()
+    result = supabase.table('products').select('*').execute()
     if hasattr(result, 'error') and result.error:
         print(f"Error fetching products: {result.error}")
         return

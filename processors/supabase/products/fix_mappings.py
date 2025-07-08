@@ -124,7 +124,7 @@ def fix_mappings():
         
         while True:
             # Get products with pagination
-            result = supabase.table('Products').select('id, name, specifications, nutritional').range(
+            result = supabase.table('products').select('id, name, specifications, nutritional').range(
                 page * page_size, 
                 (page + 1) * page_size - 1
             ).execute()
@@ -170,7 +170,7 @@ def fix_mappings():
                         new_nutr = map_dictionary(nutr, NUTRITIONAL_INFO_MAPPINGS)
                         
                         # Update the product
-                        update_result = supabase.table('Products').update({
+                        update_result = supabase.table('products').update({
                             'specifications': new_specs,
                             'nutritional': new_nutr
                         }).eq('id', product['id']).execute()

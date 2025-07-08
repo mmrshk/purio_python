@@ -69,7 +69,7 @@ def set_category_for_all_products():
         page_size = 1000
         while True:
             # Fetch products with pagination
-            result = supabase.table('Products').select('id, name, category').range(
+            result = supabase.table('products').select('id, name, category').range(
                 page * page_size,
                 (page + 1) * page_size - 1
             ).execute()
@@ -85,7 +85,7 @@ def set_category_for_all_products():
                 category = name_to_category.get(name)
                 if category and category != product.get('category'):
                     matched_count += 1
-                    update_result = supabase.table('Products').update({
+                    update_result = supabase.table('products').update({
                         'category': category
                     }).eq('id', product['id']).execute()
                     if hasattr(update_result, 'error') and update_result.error:

@@ -348,7 +348,7 @@ def update_supabase_health_scores():
     scorer = HealthScorer()
     
     # Fetch all products from Supabase
-    result = supabase.table('Products').select('*').execute()
+    result = supabase.table('products').select('*').execute()
     
     if hasattr(result, 'error') and result.error:
         print(f"Error fetching products: {result.error}")
@@ -365,7 +365,7 @@ def update_supabase_health_scores():
             score = scorer.calculate_health_score(product)
             
             # Update the product
-            supabase.table('Products').update({
+            supabase.table('products').update({
                 'health_score': score
             }).eq('id', product['id']).execute()
             

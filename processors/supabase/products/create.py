@@ -160,7 +160,7 @@ def get_existing_products():
         set: Set of existing product names
     """
     try:
-        result = supabase.table('Products').select('name').execute()
+        result = supabase.table('products').select('name').execute()
         if hasattr(result, 'error') and result.error:
             print(f"Error fetching existing products: {result.error}")
             return set()

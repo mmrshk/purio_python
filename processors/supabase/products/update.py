@@ -50,7 +50,7 @@ def fix_barcodes():
         
         while True:
             # Get products with pagination
-            result = supabase.table('Products').select('id, name, barcode').range(
+            result = supabase.table('products').select('id, name, barcode').range(
                 page * page_size, 
                 (page + 1) * page_size - 1
             ).execute()
@@ -75,7 +75,7 @@ def fix_barcodes():
                     
                     if new_barcode:
                         # Update the product
-                        update_result = supabase.table('Products').update({
+                        update_result = supabase.table('products').update({
                             'barcode': new_barcode
                         }).eq('id', product['id']).execute()
                         

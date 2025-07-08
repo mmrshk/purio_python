@@ -57,7 +57,7 @@ def update_supabase_product(product_id, external_id, barcode, name):
     Update Supabase product by id, setting external_id and barcode only if barcode is missing or empty.
     """
     try:
-        update_result = supabase.table('Products').update({
+        update_result = supabase.table('products').update({
             'external_id': external_id,
             'barcode': barcode
         }).eq('id', product_id).execute()
@@ -72,7 +72,7 @@ def update_supabase_product(product_id, external_id, barcode, name):
 def process_supabase_products():
     print("Querying Supabase for products with missing barcodes...")
     # Get all products where barcode is null or empty
-    result = supabase.table('Products').select('id, name, supermarket_url, barcode, external_id').or_('barcode.is.null,barcode.eq.""').execute()
+    result = supabase.table('products').select('id, name, supermarket_url, barcode, external_id').or_('barcode.is.null,barcode.eq.""').execute()
     if hasattr(result, 'error') and result.error:
         print(f"Error fetching products: {result.error}")
         return
