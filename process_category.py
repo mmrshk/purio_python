@@ -112,8 +112,8 @@ def process_category(category_url, category_id):
     # print("\nStep 6: Calculating health scores...")
     # fill_health_scores_in_csv(processed_csv_path)
     
-    # Step 7: Save to Supabase
-    # print("\nStep 7: Saving to Supabase...")
+    # Step 7: Save to Supabase (includes additives fetching)
+    # print("\nStep 7: Saving to Supabase (with additives fetching)...")
     # process_single_file(processed_csv_path)
     
     print(f"\n=== Completed processing for category: {category_url} ===\n")

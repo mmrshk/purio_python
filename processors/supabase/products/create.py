@@ -8,6 +8,9 @@ from pprint import pprint
 import argparse
 import math
 import json
+import time
+import requests
+from typing import Optional, List
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +21,48 @@ supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 if not supabase_key:
     raise ValueError("SUPABASE_SERVICE_ROLE_KEY environment variable is not set")
 supabase = create_client(supabase_url, supabase_key)
+
+def fetch_additives_from_off(barcode: str) -> Optional[List[str]]:
+    """
+    Fetch additives_tags from Open Food Facts API.
+    
+    Args:
+        barcode: Product barcode
+        
+    Returns:
+        List of additives tags or None if not found/error
+    """
+    if not barcode or barcode == 'nan' or barcode == '':
+        return None
+        
+    try:
+        url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
+        response = requests.get(url, timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json()
+            product = data.get('product', {})
+            
+            additives_tags = product.get('additives_tags', [])
+            
+            if additives_tags and isinstance(additives_tags, list):
+                # Clean up the additives tags (remove 'en:' prefix if present)
+                cleaned_additives = []
+                for tag in additives_tags:
+                    if tag.startswith('en:'):
+                        cleaned_additives.append(tag[3:])  # Remove 'en:' prefix
+                    else:
+                        cleaned_additives.append(tag)
+                
+                return cleaned_additives
+            else:
+                return []
+        else:
+            return None
+            
+    except Exception as e:
+        print(f"Error fetching additives for barcode {barcode}: {e}")
+        return None
 
 def is_processed_csv(file_path):
     """
@@ -150,6 +195,14 @@ def validate_record(record):
     if 'nutritional' in record:
         validated['nutritional'] = record['nutritional'] if record['nutritional'] else {}
     
+    # Array fields
+    if 'additives_tags' in record:
+        validated['additives_tags'] = record['additives_tags'] if record['additives_tags'] else []
+    
+    # Timestamp fields
+    if 'additives_updated_at' in record:
+        validated['additives_updated_at'] = record['additives_updated_at'] if record['additives_updated_at'] else None
+    
     return validated
 
 def get_existing_products():
@@ -198,9 +251,33 @@ def process_csv_for_supabase(csv_path):
     records = []
     skipped_records = 0
     duplicate_records = 0
+    additives_fetched = 0
+    additives_found = 0
     
-    for _, row in df.iterrows():
+    print(f"\nProcessing {len(df)} products for Supabase insertion...")
+    print("Fetching additives from Open Food Facts API...")
+    
+    for idx, (_, row) in enumerate(df.iterrows()):
         try:
+            # Fetch additives if barcode is available
+            additives_tags = None
+            if row['barcode'] and str(row['barcode']) != 'nan':
+                print(f"  [{idx + 1}/{len(df)}] Fetching additives for {row['name']} (Barcode: {row['barcode']})")
+                additives_tags = fetch_additives_from_off(str(row['barcode']))
+                additives_fetched += 1
+                
+                if additives_tags is not None:
+                    if additives_tags:
+                        print(f"    ✅ Found {len(additives_tags)} additives: {additives_tags[:3]}...")
+                        additives_found += 1
+                    else:
+                        print(f"    ℹ️  No additives found")
+                else:
+                    print(f"    ❌ Failed to fetch additives")
+                
+                # Add small delay to avoid overwhelming the API
+                time.sleep(0.5)
+            
             record = {
                 'name': row['name'],
                 'description': row['description'],
@@ -214,7 +291,7 @@ def process_csv_for_supabase(csv_path):
                 'nutritional': row['nutritional_info'],
                 'health_score': row.get('health_score'),
                 'external_id': row.get('external_id'),
-                
+                'additives_tags': additives_tags,
             }
             
             # Check if product already exists
@@ -244,6 +321,11 @@ def process_csv_for_supabase(csv_path):
         print(f"\nSkipped {skipped_records} records due to missing required fields or errors")
     if duplicate_records > 0:
         print(f"Skipped {duplicate_records} records due to duplicate product names")
+    
+    print(f"\nAdditives Summary:")
+    print(f"  Products with barcodes processed: {additives_fetched}")
+    print(f"  Products with additives found: {additives_found}")
+    print(f"  Success rate: {(additives_found / additives_fetched * 100):.1f}%" if additives_fetched > 0 else "N/A")
     
     return records
 
