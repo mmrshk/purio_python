@@ -1,7 +1,7 @@
 import os
-from processors.helpers.scoring.nutri_score import NutriScoreCalculator
-from processors.helpers.scoring.additives_score import AdditivesScoreCalculator
-from processors.helpers.scoring.nova_score import NovaScoreCalculator
+from processors.helpers.scoring.types.nutri_score import NutriScoreCalculator
+from processors.helpers.scoring.types.additives_score import AdditivesScoreCalculator
+from processors.helpers.scoring.types.nova_score import NovaScoreCalculator
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -15,6 +15,10 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def calculate_final_health_score(nutri, additives, nova):
+    # If any score is None, return None (cannot calculate final score)
+    if nutri is None or additives is None or nova is None:
+        return None
+
     return int(round(nutri * 0.4 + additives * 0.3 + nova * 0.3))
 
 def update_all_scores():
@@ -35,11 +39,17 @@ def update_all_scores():
         additives_score = additives_calc.calculate(product_data)
         nova_score = nova_calc.calculate(product_data)
         final_score = calculate_final_health_score(nutri_score, additives_score, nova_score)
+        
         print(f"Product: {product.get('name', 'Unknown')} (ID: {product.get('id', 'N/A')})")
         print(f"  NutriScore: {nutri_score}")
         print(f"  AdditivesScore: {additives_score}")
         print(f"  NovaScore: {nova_score}")
         print(f"  Final Health Score: {final_score}")
+        
+        if final_score is None:
+            print("  ⚠️  Skipped: Cannot calculate final score (missing data)")
+        else:
+            print("  ✅ Score calculated successfully")
         print("---")
         # Here you would update the DB with these values
 

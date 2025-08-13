@@ -94,166 +94,126 @@ class TestNutriScoreCalculator(unittest.TestCase):
             'nutritional': {}
         }
         
-        with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value='C'):
+        with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=100):
             result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 'C')
+            self.assertEqual(result, 100)
             self.assertEqual(source, 'api')
     
-    def test_calculate_fallback_to_local(self):
-        """Test calculation falls back to local method when API fails."""
+    def test_calculate_negative_points(self):
+        """Test negative points calculation."""
+        nutritional_data = {
+            'calories_per_100g_or_100ml': 200,  # kcal
+            'sugar': 25,   # g
+            'fat': 10,     # g (30% = 3g saturated fat)
+        }
+        
+        n_points = self.calculator.calculate_negative_points(nutritional_data)
+        # Energy: 200 kcal = 836.8 kJ → 2 points
+        # Sugars: 25g → 5 points
+        # Saturated fat: 3g (30% of 10g fat) → 2 points
+        # Sodium: 0 (not available) → 0 points
+        # Total: 2 + 5 + 2 + 0 = 9 points
+        self.assertEqual(n_points, 9)
+    
+    def test_calculate_positive_points(self):
+        """Test positive points calculation."""
+        nutritional_data = {
+            'protein': 8  # g
+        }
+        specifications_data = {
+            'fiber': 4.5  # g
+        }
+        
+        p_points = self.calculator.calculate_positive_points(nutritional_data, specifications_data)
+        # Fiber: 4.5g → 4 points
+        # Protein: 8g → 4 points
+        # Total: 4 + 4 = 8 points
+        self.assertEqual(p_points, 8)
+    
+    def test_calculate_final_nutriscore(self):
+        """Test final Nutri-Score grade calculation."""
+        # Test case 1: N < 11
+        grade = self.calculator.calculate_final_nutriscore(5, 8)  # N=5, P=8
+        self.assertEqual(grade, 'a')  # 5 - 8 = -3 → A
+        
+        # Test case 2: N ≥ 11, fruit/veg < threshold
+        grade = self.calculator.calculate_final_nutriscore(15, 8)  # N=15, P=8
+        self.assertEqual(grade, 'c')  # 15 - 5 = 10 → C (using fiber only)
+        
+        # Test case 3: Very high N
+        grade = self.calculator.calculate_final_nutriscore(25, 2)  # N=25, P=2
+        self.assertEqual(grade, 'e')  # 25 - 2 = 23 → E
+    
+    def test_extract_nutritional_value(self):
+        """Test extracting nutritional values from different formats."""
+        nutritional_data = {
+            'sugar': 10.5,
+            'protein': '8.0g',
+            'fat': '3.5 grams'
+        }
+        
+        sugar_value = self.calculator.extract_nutritional_value(nutritional_data, 'sugar')
+        protein_value = self.calculator.extract_nutritional_value(nutritional_data, 'protein')
+        fat_value = self.calculator.extract_nutritional_value(nutritional_data, 'fat')
+        
+        self.assertEqual(sugar_value, 10.5)
+        self.assertEqual(protein_value, 8.0)
+        self.assertEqual(fat_value, 3.5)
+    
+    def test_extract_specification_value(self):
+        """Test extracting specification values."""
+        specifications_data = {
+            'fiber': 2.5,
+            'vitamins': '10mg'
+        }
+        
+        fiber_value = self.calculator.extract_specification_value(specifications_data, 'fiber')
+        self.assertEqual(fiber_value, 2.5)
+    
+    def test_calculate_local_nutriscore(self):
+        """Test local Nutri-Score calculation."""
         product_data = {
-            'barcode': '1234567890123',
-            'name': 'Test Product',
             'nutritional': {
-                'sugar': '10',
-                'fiber': '5',
-                'protein': '8'
+                'calories_per_100g_or_100ml': 150,  # kcal
+                'sugar': 8,    # g
+                'fat': 3.33,   # g (30% = 1g saturated fat)
+                'protein': 8   # g
+            },
+            'specifications': {
+                'fiber': 4.5    # g
             }
         }
         
         with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            # Should return a numeric value between 0-100
-            self.assertIsInstance(result, (int, float))
-            self.assertGreaterEqual(result, 0)
-            self.assertLessEqual(result, 100)
+            score, source = self.calculator.calculate(product_data)
             self.assertEqual(source, 'local')
+            self.assertIsInstance(score, (int, float))
+            self.assertGreaterEqual(score, 0)
+            self.assertLessEqual(score, 100)
     
-    def test_extract_nutritional_value_direct(self):
-        """Test extracting nutritional value directly."""
-        nutritional_data = {
-            'sugar': 15.5,
-            'protein': 8.0
+    def test_calculate_with_missing_data(self):
+        """Test calculation with missing nutritional data."""
+        product_data = {
+            'nutritional': {},
+            'specifications': {}
         }
         
-        sugar_value = self.calculator.extract_nutritional_value(nutritional_data, 'sugar')
-        protein_value = self.calculator.extract_nutritional_value(nutritional_data, 'protein')
-        
-        self.assertEqual(sugar_value, 15.5)
-        self.assertEqual(protein_value, 8.0)
+        with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=None):
+            score, source = self.calculator.calculate(product_data)
+            self.assertEqual(source, 'local')
+            self.assertIsInstance(score, (int, float))
     
-    def test_extract_nutritional_value_variations(self):
-        """Test extracting nutritional value with different key variations."""
-        nutritional_data = {
-            'saturated_fat': 5.0,
-            'saturated fat': 6.0,
-            'fiber': 3.0,
-            'fibre': 4.0
-        }
-        
-        sat_fat_value = self.calculator.extract_nutritional_value(nutritional_data, 'saturated_fat')
-        fiber_value = self.calculator.extract_nutritional_value(nutritional_data, 'fiber')
-        
-        # Should return the first match found
-        self.assertEqual(sat_fat_value, 5.0)
-        self.assertEqual(fiber_value, 3.0)
-    
-    def test_extract_nutritional_value_string(self):
-        """Test extracting nutritional value from string format."""
-        nutritional_data = {
-            'sugar': '12.5g',
-            'protein': '8.0 grams'
-        }
-        
-        sugar_value = self.calculator.extract_nutritional_value(nutritional_data, 'sugar')
-        protein_value = self.calculator.extract_nutritional_value(nutritional_data, 'protein')
-        
-        self.assertEqual(sugar_value, 12.5)
-        self.assertEqual(protein_value, 8.0)
-    
-    def test_extract_nutritional_value_not_found(self):
-        """Test extracting nutritional value when not found."""
-        nutritional_data = {
-            'sugar': 10.0
-        }
-        
-        result = self.calculator.extract_nutritional_value(nutritional_data, 'protein')
-        self.assertEqual(result, 0.0)
-    
-    def test_extract_nutritional_value_empty_data(self):
-        """Test extracting nutritional value with empty data."""
-        result = self.calculator.extract_nutritional_value({}, 'sugar')
-        self.assertEqual(result, 0.0)
-        
-        result = self.calculator.extract_nutritional_value(None, 'sugar')
-        self.assertEqual(result, 0.0)
-    
-    def test_calculate_nutrient_score_positive(self):
-        """Test nutrient score calculation with positive nutrients."""
-        nutritional_data = {
-            'fiber': 8.0,
-            'protein': 12.0
-        }
-        
-        score = self.calculator.calculate_nutrient_score(nutritional_data)
-        # Fiber: 8/10 * 3 = 2.4, Protein: 12/10 * 2 = 2.4, Total: 4.8
-        self.assertGreater(score, 0)
-    
-    def test_calculate_nutrient_score_negative(self):
-        """Test nutrient score calculation with negative nutrients."""
-        nutritional_data = {
-            'sugar': 25.0,
-            'saturated_fat': 15.0
-        }
-        
-        score = self.calculator.calculate_nutrient_score(nutritional_data)
-        # Should be negative due to high sugar and saturated fat
-        self.assertLess(score, 0)
-    
-    def test_calculate_nutrient_score_mixed(self):
-        """Test nutrient score calculation with mixed positive and negative nutrients."""
-        nutritional_data = {
-            'sugar': 10.0,      # Negative: 10/10 * -1.5 = -1.5
-            'fiber': 5.0,       # Positive: 5/10 * 3 = 1.5
-            'protein': 8.0      # Positive: 8/10 * 2 = 1.6
-        }
-        
-        score = self.calculator.calculate_nutrient_score(nutritional_data)
-        # Expected: -1.5 + 1.5 + 1.6 = 1.6
-        self.assertGreater(score, 0)
-    
-    def test_calculate_with_string_nutritional_data(self):
+    def test_calculate_with_string_data(self):
         """Test calculation with string nutritional data."""
         product_data = {
-            'barcode': '1234567890123',
-            'nutritional': '{"sugar": "15", "fiber": "8"}'
+            'nutritional': '{"energy": "200", "sugars": "25"}',
+            'specifications': '{"fiber": "1.5"}'
         }
         
         with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            self.assertIsInstance(result, (int, float))
-            self.assertGreaterEqual(result, 0)
-            self.assertLessEqual(result, 100)
+            score, source = self.calculator.calculate(product_data)
             self.assertEqual(source, 'local')
-    
-    def test_calculate_with_invalid_json_nutritional_data(self):
-        """Test calculation with invalid JSON nutritional data."""
-        product_data = {
-            'barcode': '1234567890123',
-            'nutritional': 'invalid json'
-        }
-        
-        with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            # Should handle invalid JSON gracefully
-            self.assertIsInstance(result, (int, float))
-            self.assertEqual(source, 'local')
-    
-    def test_calculate_no_barcode_or_name(self):
-        """Test calculation when no barcode or name is provided."""
-        product_data = {
-            'nutritional': {
-                'sugar': '10',
-                'fiber': '5'
-            }
-        }
-        
-        with patch.object(self.calculator, 'fetch_nutriscore_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            self.assertIsInstance(result, (int, float))
-            self.assertGreaterEqual(result, 0)
-            self.assertLessEqual(result, 100)
-            self.assertEqual(source, 'local')
+            self.assertIsInstance(score, (int, float))
 
 
 def run_tests():

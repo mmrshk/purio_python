@@ -48,14 +48,9 @@ class NovaScoreCalculator:
     
     def calculate_local_nova(self, product_data):
         """Calculate NOVA score locally based on product data."""
-        nova = product_data.get('nova_group')
-        try:
-            nova = int(nova)
-            # Map 1 (best) to 100, 2 to 75, 3 to 50, 4 (worst) to 25
-            score = 125 - nova * 25
-            return max(0, min(100, score))
-        except (TypeError, ValueError):
-            return 50
+        # Since nova_group is not available in our product data,
+        # return None to indicate no Nova data available
+        return None
     
     def calculate(self, product_data):
         """Calculate NOVA score, trying API first, then falling back to local calculation."""
@@ -73,6 +68,9 @@ class NovaScoreCalculator:
             return score, nova_score_set_by
         
         # Fallback to local calculation
-        nova_score_set_by = 'local'
         score = self.calculate_local_nova(product_data)
+
+        if score is None:
+            return None, None
+        nova_score_set_by = 'local'
         return score, nova_score_set_by 

@@ -5,7 +5,7 @@ from processors.scraper.auchan_scraper import AuchanScraper
 from processors.supabase.products.create import process_single_file
 from processors.barcodes.barcode_filler import fill_barcodes_in_csv
 from processors.helpers.map_specifications_and_nutritional_info import process_csv_columns
-# from processors.helpers.health_score_filler import fill_health_scores_in_csv
+from processors.scoring.health_score_filler import fill_health_scores_in_csv
 import os
 import time
 import json
@@ -109,12 +109,12 @@ def process_category(category_url, category_id):
     print("Saved mapped data back to processed CSV")
     
     # Step 6: Calculate health scores
-    # print("\nStep 6: Calculating health scores...")
-    # fill_health_scores_in_csv(processed_csv_path)
+    print("\nStep 6: Calculating health scores...")
+    fill_health_scores_in_csv(processed_csv_path)
     
-    # Step 7: Save to Supabase (includes additives fetching)
-    # print("\nStep 7: Saving to Supabase (with additives fetching)...")
-    # process_single_file(processed_csv_path)
+    # Step 7: Save to Supabase (includes additives fetching and relations creation)
+    print("\nStep 7: Saving to Supabase (with additives fetching and relations creation)...")
+    process_single_file(processed_csv_path)
     
     print(f"\n=== Completed processing for category: {category_url} ===\n")
     print("Summary:")

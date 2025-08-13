@@ -11,6 +11,7 @@ import json
 import time
 import requests
 from typing import Optional, List
+from processors.helpers.additives.additives_relation_manager import AdditivesRelationManager
 
 # Load environment variables
 load_dotenv()
@@ -239,6 +240,9 @@ def process_csv_for_supabase(csv_path):
     # Get existing products
     existing_products = get_existing_products()
     
+    # Initialize additives relation manager
+    additives_manager = AdditivesRelationManager()
+    
     # Read the CSV file with barcode as string
     df = pd.read_csv(csv_path, dtype={'barcode': str})
     
@@ -327,15 +331,16 @@ def process_csv_for_supabase(csv_path):
     print(f"  Products with additives found: {additives_found}")
     print(f"  Success rate: {(additives_found / additives_fetched * 100):.1f}%" if additives_fetched > 0 else "N/A")
     
-    return records
+    return records, additives_manager
 
-def save_to_supabase(records, table_name):
+def save_to_supabase(records, table_name, additives_manager=None):
     """
-    Save records to Supabase table.
+    Save records to Supabase table and create additives relations.
     
     Args:
         records (list): List of dictionaries to insert
         table_name (str): Name of the Supabase table
+        additives_manager: AdditivesRelationManager instance for creating relations
     """
     if not records:
         print("No valid records to save")
@@ -367,6 +372,21 @@ def save_to_supabase(records, table_name):
             # Print success message with record count
             print(f"Successfully inserted {len(batch)} records")
             
+            # Create additives relations for the inserted products
+            if additives_manager and result.data:
+                print(f"\nCreating additives relations for {len(result.data)} products...")
+                for product in result.data:
+                    product_id = product.get('id')
+                    additives_tags = product.get('additives_tags')
+                    product_name = product.get('name', 'Unknown Product')
+                    
+                    if product_id and additives_tags:
+                        additives_manager.create_relations_for_product(
+                            product_id=product_id,
+                            additives_tags=additives_tags,
+                            product_name=product_name
+                        )
+            
     except Exception as e:
         print(f"Error saving to Supabase: {str(e)}")
         if hasattr(e, 'response'):
@@ -384,7 +404,7 @@ def process_single_file(csv_path):
     
     try:
         # Process CSV data
-        records = process_csv_for_supabase(csv_path)
+        records, additives_manager = process_csv_for_supabase(csv_path)
         
         # Get table name from the subcategory folder name
         table_name = 'Products'
@@ -398,9 +418,12 @@ def process_single_file(csv_path):
         #     print("Skipping this file...")
         #     return
         
-        # Save to Supabase
-        save_to_supabase(records, table_name)
+        # Save to Supabase with additives relations
+        save_to_supabase(records, table_name, additives_manager)
         print(f"Successfully saved data from {csv_path} to Supabase table '{table_name}'")
+        
+        # Print additives relations statistics
+        additives_manager.print_statistics()
         
     except Exception as e:
         print(f"Error processing {csv_path}: {str(e)}")
