@@ -220,6 +220,14 @@ class NutriScoreCalculator:
             except:
                 specifications_data = {}
 
+        # Special handling for water and similar products with no nutritional data
+        if not nutritional_data or all(not nutritional_data.get(key) for key in ['calories_per_100g_or_100ml', 'sugar', 'fat', 'protein']):
+            # Check if this looks like water or a similar natural product
+            product_name_lower = name.lower() if name else ""
+            if any(keyword in product_name_lower for keyword in ['water', 'apa', 'mineral', 'spring']):
+                nutriscore_score_set_by = 'special_case'
+                return 100, nutriscore_score_set_by
+
         # Calculate negative points (N)
         n_points = self.calculate_negative_points(nutritional_data)
         

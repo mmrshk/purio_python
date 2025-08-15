@@ -10,14 +10,16 @@ from pathlib import Path
 
 # Add the project root to the path
 sys.path.append(str(Path(__file__).resolve().parents[4]))
-from processors.scoring.types.nova_score import NovaScoreCalculator
 
 
 class TestNovaScoreCalculator(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        self.calculator = NovaScoreCalculator()
+        # Mock the IngredientsChecker import to avoid file dependencies
+        with patch('ingredients.check_ingredients.IngredientsChecker'):
+            from processors.scoring.types.nova_score import NovaScoreCalculator
+            self.calculator = NovaScoreCalculator()
     
     def test_nova_map_values(self):
         """Test NOVA group to score mapping."""
@@ -93,43 +95,113 @@ class TestNovaScoreCalculator(unittest.TestCase):
             result = self.calculator.fetch_nova_from_off(ean='1234567890123')
             self.assertIsNone(result)
     
-    def test_calculate_local_nova_group_1(self):
-        """Test local NOVA calculation for group 1."""
-        product_data = {'nova_group': 1}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 100)
+    def test_get_nova_distribution_from_ingredients_success(self):
+        """Test getting NOVA distribution from ingredients successfully."""
+        product_data = {
+            'name': 'Test Product',
+            'specifications': {
+                'ingredients': 'Lapte de vaca, zahar, acid citric'
+            }
+        }
+        
+        # Mock the ingredients checker result
+        mock_result = {
+            'nova_scores': [1, 2, 4]  # Natural, culinary, ultra-processed
+        }
+        
+        with patch.object(self.calculator.ingredients_checker, 'check_product_ingredients', return_value=mock_result):
+            result = self.calculator.get_nova_distribution_from_ingredients(product_data)
+            self.assertEqual(result, [1, 2, 4])
     
-    def test_calculate_local_nova_group_2(self):
-        """Test local NOVA calculation for group 2."""
-        product_data = {'nova_group': 2}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 75)
+    def test_get_nova_distribution_no_specifications(self):
+        """Test getting NOVA distribution when no specifications."""
+        product_data = {
+            'name': 'Test Product'
+        }
+        
+        result = self.calculator.get_nova_distribution_from_ingredients(product_data)
+        self.assertIsNone(result)
     
-    def test_calculate_local_nova_group_3(self):
-        """Test local NOVA calculation for group 3."""
-        product_data = {'nova_group': 3}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 50)
+    def test_get_nova_distribution_no_ingredients(self):
+        """Test getting NOVA distribution when no ingredients."""
+        product_data = {
+            'name': 'Test Product',
+            'specifications': {}
+        }
+        
+        result = self.calculator.get_nova_distribution_from_ingredients(product_data)
+        self.assertIsNone(result)
     
-    def test_calculate_local_nova_group_4(self):
-        """Test local NOVA calculation for group 4."""
-        product_data = {'nova_group': 4}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 25)
+    def test_calculate_nova_from_distribution_nova_4(self):
+        """Test NOVA calculation when NOVA 4 ingredients are present."""
+        nova_scores = [1, 2, 4, 1, 2]  # Contains NOVA 4
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertEqual(nova_group, 4)  # Should return NOVA 4 (ultra-processed)
     
-    def test_calculate_local_nova_invalid_value(self):
-        """Test local NOVA calculation with invalid value."""
-        product_data = {'nova_group': 'invalid'}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 50)  # Default fallback
+    def test_calculate_nova_from_distribution_nova_3(self):
+        """Test NOVA calculation when NOVA 3 ingredients are present."""
+        nova_scores = [1, 2, 3, 1]  # Contains NOVA 3
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertEqual(nova_group, 3)  # Should return NOVA 3 (processed)
     
-    def test_calculate_local_nova_no_value(self):
-        """Test local NOVA calculation with no value."""
-        product_data = {}
-        result = self.calculator.calculate_local_nova(product_data)
-        self.assertEqual(result, 50)  # Default fallback
+    def test_calculate_nova_from_distribution_nova_2_only(self):
+        """Test NOVA calculation when only NOVA 2 ingredients are present."""
+        nova_scores = [2, 2, 2]  # Only NOVA 2 (culinary ingredients)
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertEqual(nova_group, 2)  # Should return NOVA 2 (culinary)
     
-    def test_calculate_with_api_nova(self):
+    def test_calculate_nova_from_distribution_nova_1_and_2(self):
+        """Test NOVA calculation when mix of NOVA 1 and 2 ingredients."""
+        nova_scores = [1, 2, 1, 2]  # Mix of natural and culinary
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertEqual(nova_group, 3)  # Should return NOVA 3 (processed)
+    
+    def test_calculate_nova_from_distribution_nova_1_only(self):
+        """Test NOVA calculation when only NOVA 1 ingredients are present."""
+        nova_scores = [1, 1, 1]  # Only NOVA 1 (natural ingredients)
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertEqual(nova_group, 1)  # Should return NOVA 1 (natural)
+    
+    def test_calculate_nova_from_distribution_empty(self):
+        """Test NOVA calculation with empty distribution."""
+        nova_scores = []
+        nova_group = self.calculator.calculate_nova_from_distribution(nova_scores)
+        self.assertIsNone(nova_group)
+    
+    def test_calculate_nova_from_distribution_none(self):
+        """Test NOVA calculation with None distribution."""
+        nova_group = self.calculator.calculate_nova_from_distribution(None)
+        self.assertIsNone(nova_group)
+    
+    def test_calculate_local_nova_with_ingredients(self):
+        """Test local NOVA calculation using ingredients."""
+        product_data = {
+            'name': 'Test Product',
+            'specifications': {
+                'ingredients': 'Lapte de vaca, acid citric, arome'
+            }
+        }
+        
+        # Mock the ingredients checker result
+        mock_result = {
+            'nova_scores': [1, 4, 4]  # Natural, ultra-processed, ultra-processed
+        }
+        
+        with patch.object(self.calculator.ingredients_checker, 'check_product_ingredients', return_value=mock_result):
+            result = self.calculator.calculate_local_nova(product_data)
+            self.assertEqual(result, 4)  # Should return NOVA 4 (ultra-processed)
+    
+    def test_calculate_local_nova_no_ingredients(self):
+        """Test local NOVA calculation when no ingredients."""
+        product_data = {
+            'name': 'Test Product',
+            'specifications': {}
+        }
+        
+        result = self.calculator.calculate_local_nova(product_data)
+        self.assertIsNone(result)
+    
+    def test_calculate_with_api_success(self):
         """Test calculation when API returns NOVA group."""
         product_data = {
             'barcode': '1234567890123',
@@ -141,52 +213,39 @@ class TestNovaScoreCalculator(unittest.TestCase):
             self.assertEqual(result, 80)  # NOVA group 2 maps to 80
             self.assertEqual(source, 'api')
     
-    def test_calculate_fallback_to_local(self):
-        """Test calculation falls back to local method when API fails."""
+    def test_calculate_fallback_to_ingredients(self):
+        """Test calculation falls back to ingredients when API fails."""
         product_data = {
             'barcode': '1234567890123',
             'name': 'Test Product',
-            'nova_group': 3
+            'specifications': {
+                'ingredients': 'Lapte de vaca, acid citric'
+            }
+        }
+        
+        # Mock API failure and ingredients success
+        mock_result = {
+            'nova_scores': [1, 4]  # Natural, ultra-processed
         }
         
         with patch.object(self.calculator, 'fetch_nova_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 50)  # NOVA group 3 maps to 50
-            self.assertEqual(source, 'local')
+            with patch.object(self.calculator.ingredients_checker, 'check_product_ingredients', return_value=mock_result):
+                result, source = self.calculator.calculate(product_data)
+                self.assertEqual(result, 20)  # NOVA group 4 maps to 20
+                self.assertEqual(source, 'local')
     
-    def test_calculate_no_barcode_or_name(self):
-        """Test calculation when no barcode or name is provided."""
-        product_data = {
-            'nova_group': 1
-        }
-        
-        with patch.object(self.calculator, 'fetch_nova_from_off', return_value=None):
-            result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 100)  # NOVA group 1 maps to 100
-            self.assertEqual(source, 'local')
-    
-    def test_calculate_api_unknown_nova_group(self):
-        """Test calculation when API returns unknown NOVA group."""
+    def test_calculate_no_ingredients_available(self):
+        """Test calculation when no ingredients are available."""
         product_data = {
             'barcode': '1234567890123',
-            'name': 'Test Product'
-        }
-        
-        with patch.object(self.calculator, 'fetch_nova_from_off', return_value=5):
-            result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 50)  # Unknown group defaults to 50
-            self.assertEqual(source, 'api')
-    
-    def test_calculate_string_nova_group(self):
-        """Test calculation with string NOVA group value."""
-        product_data = {
-            'nova_group': '2'
+            'name': 'Test Product',
+            'specifications': {}
         }
         
         with patch.object(self.calculator, 'fetch_nova_from_off', return_value=None):
             result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 75)  # String '2' should be converted to int
-            self.assertEqual(source, 'local')
+            self.assertIsNone(result)
+            self.assertIsNone(source)
     
     def test_calculate_edge_cases(self):
         """Test calculation with edge cases."""
@@ -194,25 +253,25 @@ class TestNovaScoreCalculator(unittest.TestCase):
         product_data = {
             'barcode': None,
             'name': None,
-            'nova_group': None
+            'specifications': None
         }
         
         with patch.object(self.calculator, 'fetch_nova_from_off', return_value=None):
             result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 50)  # Default fallback
-            self.assertEqual(source, 'local')
+            self.assertIsNone(result)
+            self.assertIsNone(source)
         
-        # Test with empty string values
+        # Test with empty specifications
         product_data = {
             'barcode': '',
             'name': '',
-            'nova_group': ''
+            'specifications': {}
         }
         
         with patch.object(self.calculator, 'fetch_nova_from_off', return_value=None):
             result, source = self.calculator.calculate(product_data)
-            self.assertEqual(result, 50)  # Default fallback
-            self.assertEqual(source, 'local')
+            self.assertIsNone(result)
+            self.assertIsNone(source)
 
 
 def run_tests():

@@ -1,0 +1,945 @@
+name,name_ro,nova_score,risk_level
+apple,măr,1,Free risk
+banana,banană,1,Free risk
+orange,portocală,1,Free risk
+grape,strugure,1,Free risk
+strawberry,căpșună,1,Free risk
+blueberry,afină,1,Free risk
+raspberry,zmeură,1,Free risk
+blackberry,mură,1,Free risk
+cherry,vișină,1,Free risk
+peach,piersică,1,Free risk
+pear,pară,1,Free risk
+plum,prună,1,Free risk
+apricot,caisă,1,Free risk
+nectarine,nectarină,1,Free risk
+mango,mango,1,Free risk
+pineapple,ananas,1,Free risk
+kiwi,kiwi,1,Free risk
+papaya,papaya,1,Free risk
+guava,guava,1,Free risk
+passion fruit,fructul pasiunii,1,Free risk
+dragon fruit,fructul dragonului,1,Free risk
+lychee,lichi,1,Free risk
+rambutan,rambutan,1,Free risk
+longan,longan,1,Free risk
+mangosteen,mangostan,1,Free risk
+durian,durian,1,Free risk
+jackfruit,jackfruit,1,Free risk
+breadfruit,fructul pâinii,1,Free risk
+soursop,graviola,1,Free risk
+custard apple,marul cremos,1,Free risk
+sugar apple,marul zahărului,1,Free risk
+cherimoya,cherimoya,1,Free risk
+sapodilla,sapodilla,1,Free risk
+star fruit,fructul stea,1,Free risk
+carambola,carambola,1,Free risk
+pomegranate,rodie,1,Free risk
+fig,smochină,1,Free risk
+date,curmală,1,Free risk
+prune,prună,1,Free risk
+raisin,stafidă,1,Free risk
+cranberry,merișoară,1,Free risk
+gooseberry,agrișă,1,Free risk
+currant,coacăză,1,Free risk
+elderberry,soc,1,Free risk
+mulberry,dudă,1,Free risk
+persimmon,caqui,1,Free risk
+quince,gutui,1,Free risk
+medlar,mușmăluță,1,Free risk
+loquat,moșmon,1,Free risk
+jujube,zyzyphus,1,Free risk
+hawthorn,păducel,1,Free risk
+rowan,scoruș,1,Free risk
+serviceberry,sorb,1,Free risk
+chokeberry,aronie,1,Free risk
+sea buckthorn,cătina,1,Free risk
+wolfberry,goji,1,Free risk
+tomato,roșie,1,Free risk
+cucumber,castravete,1,Free risk
+carrot,morcov,1,Free risk
+onion,ceapă,1,Free risk
+garlic,usturoi,1,Free risk
+potato,cartof,1,Free risk
+sweet potato,cartof dulce,1,Free risk
+bell pepper,ardei gras,1,Free risk
+jalapeno pepper,ardei iuți,1,Free risk
+habanero pepper,ardei habanero,1,Free risk
+serrano pepper,ardei serrano,1,Free risk
+cayenne pepper,ardei de cayenne,1,Free risk
+poblano pepper,ardei poblano,1,Free risk
+anaheim pepper,ardei anaheim,1,Free risk
+banana pepper,ardei banana,1,Free risk
+cherry pepper,ardei cherry,1,Free risk
+pepperoncini,pepperoncini,1,Free risk
+chili pepper,ardei iuți,1,Free risk
+ghost pepper,ardei fantomă,1,Free risk
+scotch bonnet pepper,ardei scotch bonnet,1,Free risk
+bird's eye chili,ardei ochi de pasăre,1,Free risk
+thai chili,ardei thailandez,1,Free risk
+fresno chili,ardei fresno,1,Free risk
+peter pepper,ardei peter,1,Free risk
+carolina reaper,ardei carolina reaper,1,Free risk
+trinidad scorpion,ardei scorpion trinidad,1,Free risk
+naga viper,ardei naga viper,1,Free risk
+dorset naga,ardei dorset naga,1,Free risk
+broccoli,broccoli,1,Free risk
+cauliflower,conopidă,1,Free risk
+cabbage,varză,1,Free risk
+kale,varză creață,1,Free risk
+spinach,spanac,1,Free risk
+lettuce,salata verde,1,Free risk
+arugula,rucola,1,Free risk
+watercress,creson,1,Free risk
+endive,endivie,1,Free risk
+radicchio,radicchio,1,Free risk
+escarole,escarole,1,Free risk
+frisée,frisée,1,Free risk
+butter lettuce,salata unt,1,Low risk
+romaine lettuce,salata romana,1,Free risk
+iceberg lettuce,salata iceberg,1,Free risk
+bibb lettuce,salata bibb,1,Free risk
+boston lettuce,salata boston,1,Free risk
+red leaf lettuce,salata cu frunze roșii,1,Free risk
+green leaf lettuce,salata cu frunze verzi,1,Free risk
+oak leaf lettuce,salata cu frunze de stejar,1,Free risk
+lollo rosso lettuce,salata lollo rosso,1,Free risk
+butterhead lettuce,salata butterhead,1,Low risk
+crisphead lettuce,salata crisphead,1,Free risk
+loose leaf lettuce,salata cu frunze libere,1,Free risk
+cos lettuce,salata cos,1,Free risk
+little gem lettuce,salata little gem,1,Free risk
+batavia lettuce,salata batavia,1,Free risk
+celtuce lettuce,salata celtuce,1,Free risk
+asparagus,sparanghel,1,Free risk
+artichoke,anghinare,1,Free risk
+celery,țelină,1,Free risk
+fennel,fenicul,1,Free risk
+leek,praz,1,Free risk
+scallion,ceapă verde,1,Free risk
+shallot,șalotă,1,Free risk
+chive,arpagic,1,Free risk
+green onion,ceapă verde,1,Free risk
+spring onion,ceapă de primăvară,1,Free risk
+red onion,ceapă roșie,1,Free risk
+white onion,ceapă albă,1,Free risk
+yellow onion,ceapă galbenă,1,Free risk
+sweet onion,ceapă dulce,1,Free risk
+vidalia onion,ceapă vidalia,1,Free risk
+walla walla onion,ceapă walla walla,1,Free risk
+maui onion,ceapă maui,1,Free risk
+bermuda onion,ceapă bermuda,1,Free risk
+spanish onion,ceapă spaniolă,1,Free risk
+pearl onion,ceapă perle,1,Free risk
+cipollini onion,ceapă cipollini,1,Free risk
+rice,orez,1,Free risk
+wheat,grâu,1,Free risk
+oats,ovăz,1,Free risk
+barley,orz,1,Free risk
+quinoa,quinoa,1,Free risk
+millet,mei,1,Free risk
+buckwheat,hrișcă,1,Free risk
+rye,secară,1,Free risk
+sorghum,sorg,1,Free risk
+amaranth,amaranth,1,Free risk
+teff,teff,1,Free risk
+spelt,alac,1,Free risk
+kamut,kamut,1,Free risk
+farro,farro,1,Free risk
+freekeh,freekeh,1,Free risk
+bulgur,bulgur,1,Free risk
+couscous,couscous,1,Free risk
+polenta,polenta,1,Free risk
+grits,grits,1,Free risk
+corn,porumb,1,Free risk
+popcorn,popcorn,1,Free risk
+sweet corn,porumb dulce,1,Free risk
+field corn,porumb de câmp,1,Free risk
+dent corn,porumb dent,1,Free risk
+flint corn,porumb flint,1,Free risk
+flour corn,porumb pentru făină,1,Low risk
+pod corn,porumb cu păstaie,1,Free risk
+waxy corn,porumb ceros,1,Free risk
+high amylose corn,porumb cu amiloză ridicată,1,Free risk
+low amylose corn,porumb cu amiloză scăzută,1,Free risk
+almond,migdală,1,Free risk
+walnut,nucă,1,Free risk
+cashew,caju,1,Free risk
+peanut,arahidă,1,Free risk
+pistachio,pistachiu,1,Free risk
+pecan,pecan,1,Free risk
+macadamia,macadamia,1,Free risk
+brazil nut,nucă braziliană,1,Free risk
+hazelnut,alună,1,Free risk
+chestnut,castană,1,Free risk
+pine nut,semințe de pin,1,Free risk
+sunflower seed,semințe de floarea soarelui,1,Free risk
+pumpkin seed,semințe de dovleac,1,Free risk
+chia seed,semințe de chia,1,Free risk
+flax seed,semințe de in,1,Free risk
+sesame seed,semințe de susan,1,Free risk
+poppy seed,semințe de mac,1,Free risk
+hemp seed,semințe de cânepă,1,Free risk
+pomegranate seed,semințe de rodie,1,Free risk
+passion fruit seed,semințe de fructul pasiunii,1,Free risk
+kiwi seed,semințe de kiwi,1,Free risk
+strawberry seed,semințe de căpșună,1,Free risk
+raspberry seed,semințe de zmeură,1,Free risk
+blackberry seed,semințe de mură,1,Free risk
+blueberry seed,semințe de afină,1,Free risk
+cranberry seed,semințe de merișoară,1,Free risk
+gooseberry seed,semințe de agrișă,1,Free risk
+currant seed,semințe de coacăză,1,Free risk
+elderberry seed,semințe de soc,1,Free risk
+mulberry seed,semințe de dudă,1,Free risk
+persimmon seed,semințe de caqui,1,Free risk
+quince seed,semințe de gutui,1,Free risk
+medlar seed,semințe de mușmăluță,1,Free risk
+loquat seed,semințe de moșmon,1,Free risk
+jujube seed,semințe de zyzyphus,1,Free risk
+hawthorn seed,semințe de păducel,1,Free risk
+rowan seed,semințe de scoruș,1,Free risk
+serviceberry seed,semințe de sorb,1,Free risk
+chokeberry seed,semințe de aronie,1,Free risk
+sea buckthorn seed,semințe de cătină,1,Free risk
+wolfberry seed,semințe de goji,1,Free risk
+bean,fasole,1,Free risk
+lentil,linte,1,Free risk
+chickpea,năut,1,Free risk
+black bean,fasole neagră,1,Free risk
+kidney bean,fasole roșie,1,Free risk
+pinto bean,fasole pinto,1,Free risk
+navy bean,fasole navy,1,Free risk
+lima bean,fasole lima,1,Free risk
+fava bean,bob,1,Free risk
+adzuki bean,fasole adzuki,1,Free risk
+mung bean,fasole mung,1,Free risk
+soybean,soia,1,Free risk
+edamame,edamame,1,Free risk
+split pea,mazăre spartă,1,Free risk
+green pea,mazăre verde,1,Free risk
+snow pea,mazăre de zăpadă,1,Free risk
+sugar snap pea,mazăre dulce,1,Free risk
+english pea,mazăre engleză,1,Free risk
+garden pea,mazăre de grădină,1,Free risk
+field pea,mazăre de câmp,1,Free risk
+chickling pea,mazăre de păsări,1,Free risk
+pigeon pea,mazăre porumbel,1,Free risk
+cowpea,mazăre de vacă,1,Free risk
+black eyed pea,mazăre cu ochi negru,1,Free risk
+crowder pea,mazăre crowder,1,Free risk
+cream pea,mazăre cremă,1,Free risk
+purple hull pea,mazăre cu coajă violetă,1,Free risk
+pink eyed pea,mazăre cu ochi roz,1,Free risk
+white acre pea,mazăre white acre,1,Free risk
+brown crowder pea,mazăre crowder maro,1,Free risk
+calico pea,mazăre calico,1,Free risk
+zipper pea,mazăre zipper,1,Free risk
+knuckle hull pea,mazăre knuckle hull,1,Free risk
+stick up pea,mazăre stick up,1,Free risk
+running pea,mazăre running,1,Free risk
+bush pea,mazăre bush,1,Free risk
+pole pea,mazăre pole,1,Free risk
+snap pea,mazăre snap,1,Free risk
+shell pea,mazăre shell,1,Free risk
+soup pea,mazăre pentru supă,1,Free risk
+salad pea,mazăre pentru salată,1,Free risk
+stew pea,mazăre pentru tocană,1,Free risk
+curry pea,mazăre pentru curry,1,Free risk
+casserole pea,mazăre pentru tăviță,1,Free risk
+stir fry pea,mazăre pentru prăjit,1,Free risk
+steamed pea,mazăre aburită,1,Free risk
+boiled pea,mazăre fiartă,1,Free risk
+raw pea,mazăre crudă,1,Free risk
+cooked pea,mazăre gătită,1,Free risk
+heated pea,mazăre încălzită,1,Free risk
+cooled pea,mazăre răcită,1,Free risk
+warm pea,mazăre caldă,1,Free risk
+hot pea,mazăre fierbinte,1,Free risk
+cold pea,mazăre rece,1,Free risk
+chilled pea,mazăre răcită,1,Free risk
+room temperature pea,mazăre la temperatura camerei,1,Free risk
+fresh pea,mazăre proaspătă,1,Free risk
+dried pea,mazăre uscată,1,Free risk
+frozen pea,mazăre înghețată,1,Free risk
+canned pea,mazăre în conservă,1,Free risk
+pickled pea,mazăre murată,1,Free risk
+fermented pea,mazăre fermentată,1,Free risk
+roasted pea,mazăre prăjită,1,Free risk
+grilled pea,mazăre la grătar,1,Free risk
+sautéed pea,mazăre sărată,1,Free risk
+caramelized pea,mazăre caramelizată,1,Free risk
+fried pea,mazăre prăjită,1,Free risk
+baked pea,mazăre coptă,1,Free risk
+water,apă,1,Free risk
+milk,lapte,1,Free risk
+cream,smântână,1,Free risk
+egg,ou,1,Free risk
+chicken,pui,1,Free risk
+beef,vită,1,Free risk
+pork,porc,1,Free risk
+lamb,miel,1,Free risk
+turkey,curcan,1,Free risk
+fish,pește,1,Free risk
+salmon,somon,1,Free risk
+tuna,ton,1,Free risk
+cod,cod,1,Free risk
+shrimp,creveți,1,Free risk
+crab,rac,1,Free risk
+lobster,homar,1,Free risk
+mussel,midii,1,Free risk
+clam,scoci,1,Free risk
+oyster,stridie,1,Free risk
+scallop,viezure,1,Free risk
+squid,calamar,1,Free risk
+octopus,caracatiță,1,Free risk
+cuttlefish,sepie,1,Free risk
+snail,melc,1,Free risk
+frog,broască,1,Free risk
+rabbit,iepure,1,Free risk
+duck,rață,1,Free risk
+goose,gâscă,1,Free risk
+quail,prepeliță,1,Free risk
+pheasant,fazan,1,Free risk
+partridge,potârniche,1,Free risk
+grouse,găinușă de munte,1,Free risk
+woodcock,scripcar,1,Free risk
+snipe,becățel,1,Free risk
+plover,ploier,1,Free risk
+sandpiper,năvodar,1,Free risk
+curlew,culic,1,Free risk
+godwit,culic,1,Free risk
+dowitcher,culic,1,Free risk
+willet,culic,1,Free risk
+yellowlegs,culic,1,Free risk
+redshank,culic,1,Free risk
+greenshank,culic,1,Free risk
+spotted redshank,culic,1,Free risk
+lesser yellowlegs,culic,1,Free risk
+greater yellowlegs,culic,1,Free risk
+solitary sandpiper,năvodar solitar,1,Free risk
+spotted sandpiper,năvodar pătat,1,Free risk
+least sandpiper,năvodar cel mai mic,1,Free risk
+semipalmated sandpiper,năvodar semipalmat,1,Free risk
+western sandpiper,năvodar vestic,1,Free risk
+baird's sandpiper,năvodar lui baird,1,Free risk
+pectoral sandpiper,năvodar pectoral,1,Free risk
+white-rumped sandpiper,năvodar cu spatele alb,1,Free risk
+buff-breasted sandpiper,năvodar cu pieptul bej,1,Free risk
+upland sandpiper,năvodar de deal,1,Free risk
+long-billed curlew,culic cu ciocul lung,1,Free risk
+whimbrel,culic mic,1,Free risk
+bristle-thighed curlew,culic cu coapsele păroase,1,Free risk
+eskimo curlew,culic eskimo,1,Free risk
+long-billed dowitcher,culic cu ciocul lung,1,Free risk
+short-billed dowitcher,culic cu ciocul scurt,1,Free risk
+wilson's snipe,becățelul lui wilson,1,Free risk
+common snipe,becățel comun,1,Free risk
+pin-tailed snipe,becățel cu coada ascuțită,1,Free risk
+swinhoe's snipe,becățelul lui swinhoe,1,Free risk
+great snipe,becățel mare,1,Free risk
+jack snipe,becățel mic,1,Free risk
+eurasian woodcock,scripcar eurasiatic,1,Free risk
+american woodcock,scripcar american,1,Free risk
+amami woodcock,scripcar amami,1,Free risk
+javan woodcock,scripcar javanez,1,Free risk
+new guinea woodcock,scripcar din noua guinee,1,Free risk
+moluccan woodcock,scripcar moluccan,1,Free risk
+bukidnon woodcock,scripcar bukidnon,1,Free risk
+dulit woodcock,scripcar dulit,1,Free risk
+obscure woodcock,scripcar obscur,1,Free risk
+celebes woodcock,scripcar celebes,1,Free risk
+rufous woodcock,scripcar roșcat,1,Free risk
+new zealand woodcock,scripcar din noua zeelandă,1,Free risk
+chatham woodcock,scripcar chatham,1,Free risk
+sulawesi woodcock,scripcar sulawesi,1,Free risk
+new britain woodcock,scripcar din noua britanie,1,Free risk
+solomon woodcock,scripcar solomon,1,Free risk
+new caledonian woodcock,scripcar din noua caledonie,1,Free risk
+vanuatu woodcock,scripcar vanuatu,1,Free risk
+fiji woodcock,scripcar fiji,1,Free risk
+samoa woodcock,scripcar samoa,1,Free risk
+tonga woodcock,scripcar tonga,1,Free risk
+niue woodcock,scripcar niue,1,Free risk
+cook islands woodcock,scripcar din insulele cook,1,Free risk
+french polynesia woodcock,scripcar din polinezia franceză,1,Free risk
+pitcairn woodcock,scripcar pitcairn,1,Free risk
+easter island woodcock,scripcar din insula de paști,1,Free risk
+galapagos woodcock,scripcar galapagos,1,Free risk
+cocos woodcock,scripcar cocos,1,Free risk
+malpelo woodcock,scripcar malpelo,1,Free risk
+revillagigedo woodcock,scripcar revillagigedo,1,Free risk
+clipperton woodcock,scripcar clipperton,1,Free risk
+guadalupe woodcock,scripcar guadalupe,1,Free risk
+socorro woodcock,scripcar socorro,1,Free risk
+san benedicto woodcock,scripcar san benedicto,1,Free risk
+rocas woodcock,scripcar rocas,1,Free risk
+trindade woodcock,scripcar trindade,1,Free risk
+saint peter and saint paul woodcock,scripcar din saint peter și saint paul,1,Free risk
+ascension woodcock,scripcar ascension,1,Free risk
+saint helena woodcock,scripcar din saint helena,1,Free risk
+tristan da cunha woodcock,scripcar tristan da cunha,1,Free risk
+gough woodcock,scripcar gough,1,Free risk
+nightingale woodcock,scripcar privighetoare,1,Free risk
+nightingale,privighetoare,1,Free risk
+common nightingale,privighetoare comună,1,Free risk
+thrush nightingale,privighetoare mierlă,1,Free risk
+sprosser,privighetoare sprosser,1,Free risk
+bluethroat,privighetoare cu gâtul albastru,1,Free risk
+siberian rubythroat,privighetoare cu gâtul rubin,1,Free risk
+white-tailed rubythroat,privighetoare cu gâtul rubin și coada albă,1,Free risk
+himalayan rubythroat,privighetoare cu gâtul rubin din himalaya,1,Free risk
+chinese rubythroat,privighetoare cu gâtul rubin chinezească,1,Free risk
+japanese robin,privighetoare japoneză,1,Free risk
+ryukyu robin,privighetoare ryukyu,1,Free risk
+indian robin,privighetoare indiană,1,Free risk
+siberian blue robin,privighetoare albastră siberiană,1,Free risk
+olive oil,ulei de măsline,2,Low risk
+vegetable oil,ulei vegetal,2,Free risk
+sunflower oil,ulei de floarea soarelui,2,Low risk
+canola oil,ulei de rapiță,2,Low risk
+coconut oil,ulei de cocos,2,Medium risk
+sesame oil,ulei de susan,2,Low risk
+peanut oil,ulei de arahide,2,Low risk
+corn oil,ulei de porumb,2,Low risk
+soybean oil,ulei de soia,2,Low risk
+palm oil,ulei de palmier,2,Medium risk
+butter,unt,2,Low risk
+ghee,unt clarificat,2,Low risk
+lard,untură,2,Free risk
+tallow,seu,2,Free risk
+margarine,margarină,2,Free risk
+honey,miere,2,Low risk
+maple syrup,sirop de arțar,2,Low risk
+agave syrup,sirop de agave,2,Low risk
+molasses,melasă,2,Free risk
+brown sugar,zahăr brun,2,Free risk
+white sugar,zahăr alb,2,Free risk
+powdered sugar,zahăr pudră,2,Free risk
+coconut sugar,zahăr de cocos,2,Free risk
+date sugar,zahăr de curmale,2,Free risk
+stevia,stevia,2,Free risk
+erythritol,eritritol,2,Free risk
+xylitol,xilitol,2,Free risk
+monk fruit extract,extract de fructe de călugăr,2,Medium risk
+salt,sare,2,Free risk
+sea salt,sare de mare,2,Free risk
+kosher salt,sare kosher,2,Free risk
+pink salt,sare roză,2,Free risk
+black salt,sare neagră,2,Free risk
+garlic powder,praf de usturoi,2,Low risk
+onion powder,praf de ceapă,2,Low risk
+ginger powder,praf de ghimbir,2,Low risk
+turmeric powder,praf de curcumă,2,Low risk
+cinnamon powder,praf de scorțișoară,2,Low risk
+nutmeg powder,praf de nucșoară,2,Low risk
+clove powder,praf de cuisoare,2,Low risk
+cardamom powder,praf de cardamom,2,Low risk
+cumin powder,praf de chimion,2,Low risk
+coriander powder,praf de corandru,2,Low risk
+paprika powder,praf de boia,2,Low risk
+cayenne powder,praf de piper de cayenne,2,Low risk
+black pepper powder,praf de piper negru,2,Low risk
+white pepper powder,praf de piper alb,2,Low risk
+oregano powder,praf de oregano,2,Low risk
+basil powder,praf de busuioc,2,Low risk
+thyme powder,praf de cimbru,2,Low risk
+rosemary powder,praf de rozmarin,2,Low risk
+sage powder,praf de șalvie,2,Low risk
+parsley powder,praf de pătrunjel,2,Low risk
+dill powder,praf de mărar,2,Low risk
+mint powder,praf de mentă,2,Low risk
+bay leaf powder,praf de frunze de dafin,2,Low risk
+marjoram powder,praf de majoran,2,Low risk
+tarragon powder,praf de tarhon,2,Low risk
+chives powder,praf de arpagic,2,Low risk
+cilantro powder,praf de corandru,2,Low risk
+vanilla extract,extract de vanilie,2,Medium risk
+almond extract,extract de migdale,2,Medium risk
+lemon extract,extract de lămâie,2,Medium risk
+orange extract,extract de portocale,2,Medium risk
+mint extract,extract de mentă,2,Medium risk
+peppermint extract,extract de mentă piperată,2,Medium risk
+spearmint extract,extract de mentă verde,2,Medium risk
+rose extract,extract de trandafiri,2,Medium risk
+lavender extract,extract de lavandă,2,Medium risk
+chamomile extract,extract de mușețel,2,Medium risk
+jasmine extract,extract de iasomie,2,Medium risk
+bergamot extract,extract de bergamotă,2,Medium risk
+grapefruit extract,extract de grepfrut,2,Medium risk
+lime extract,extract de lime,2,Medium risk
+vinegar,oțet,2,Low risk
+apple cider vinegar,oțet de mere,2,Low risk
+balsamic vinegar,oțet balsamic,2,Low risk
+red wine vinegar,oțet de vin roșu,2,Low risk
+white wine vinegar,oțet de vin alb,2,Low risk
+rice vinegar,oțet de orez,2,Low risk
+malt vinegar,oțet de malț,2,Low risk
+distilled vinegar,oțet distilat,2,Low risk
+sherry vinegar,oțet de sherry,2,Low risk
+champagne vinegar,oțet de șampanie,2,Low risk
+soy sauce,sos de soia,2,Low risk
+fish sauce,sos de pește,2,Low risk
+worcestershire sauce,sos worcestershire,2,Low risk
+oyster sauce,sos de stridii,2,Low risk
+hoisin sauce,sos hoisin,2,Low risk
+teriyaki sauce,sos teriyaki,2,Low risk
+sweet chili sauce,sos de ardei dulci,2,Low risk
+sriracha sauce,sos sriracha,2,Low risk
+hot sauce,sos picant,2,Low risk
+tabasco sauce,sos tabasco,2,Low risk
+chili sauce,sos de ardei iuți,2,Low risk
+barbecue sauce,sos de grătar,2,Low risk
+ketchup,ketchup,2,Low risk
+mustard,mustar,2,Low risk
+dijon mustard,mustar dijon,2,Low risk
+yellow mustard,mustar galben,2,Low risk
+whole grain mustard,mustar cu boabe întregi,2,Low risk
+honey mustard,mustar cu miere,2,Low risk
+spicy mustard,mustar picant,2,Low risk
+mayonnaise,maioneză,2,Low risk
+aioli,aioli,2,Low risk
+flour,făină,2,Low risk
+wheat flour,făină de grâu,2,Low risk
+all purpose flour,făină pentru toate tipurile,2,Low risk
+bread flour,făină pentru pâine,2,Low risk
+cake flour,făină pentru prăjituri,2,Low risk
+pastry flour,făină pentru patiserie,2,Low risk
+self rising flour,făină cu praf de copt,2,Low risk
+whole wheat flour,făină integrală de grâu,2,Low risk
+rye flour,făină de secară,2,Low risk
+oat flour,făină de ovăz,2,Low risk
+corn flour,făină de porumb,2,Low risk
+rice flour,făină de orez,2,Low risk
+almond flour,făină de migdale,2,Low risk
+coconut flour,făină de cocos,2,Low risk
+chickpea flour,făină de năut,2,Low risk
+quinoa flour,făină de quinoa,2,Low risk
+buckwheat flour,făină de hrișcă,2,Low risk
+sorghum flour,făină de sorg,2,Low risk
+millet flour,făină de mei,2,Low risk
+teff flour,făină de teff,2,Low risk
+amaranth flour,făină de amaranth,2,Low risk
+spelt flour,făină de alac,2,Low risk
+kamut flour,făină de kamut,2,Low risk
+farro flour,făină de farro,2,Low risk
+freekeh flour,făină de freekeh,2,Low risk
+bulgur flour,făină de bulgur,2,Low risk
+couscous flour,făină de couscous,2,Low risk
+polenta flour,făină de polenta,2,Low risk
+grits flour,făină de grits,2,Low risk
+yeast,drojdie,2,Low risk
+active dry yeast,drojdie uscată activă,2,Low risk
+instant yeast,drojdie instantanee,2,Low risk
+fresh yeast,drojdie proaspătă,2,Low risk
+sourdough starter,maia,2,Low risk
+baking powder,praf de copt,2,Low risk
+baking soda,bicarbonat de sodiu,2,Low risk
+cream of tartar,cremă de tartru,2,Low risk
+xanthan gum,gumă de xantan,2,High risk
+guar gum,gumă de guar,2,High risk
+locust bean gum,gumă de semințe de roșcov,2,Free risk
+carrageenan,carragenan,2,High risk
+agar agar,agar agar,2,Medium risk
+pectin,pectină,2,Medium risk
+gelatin,gelatină,2,Free risk
+lecithin,lecitină,2,Medium risk
+monoglycerides,monogliceride,2,High risk
+diglycerides,digliceride,2,High risk
+triglycerides,trigliceride,2,Free risk
+phospholipids,fosfolipide,2,Free risk
+sterols,steroli,2,Free risk
+phytosterols,fitosteroli,2,Free risk
+stanols,stanoli,2,Free risk
+phytostanols,fitostanoli,2,Free risk
+tocopherols,tocoferoli,2,Free risk
+tocotrienols,tocotrienoli,2,Free risk
+carotenoids,carotenoizi,2,Free risk
+beta carotene,beta carotena,2,Free risk
+alpha carotene,alpha carotena,2,Free risk
+lycopene,licopen,2,Free risk
+lutein,luteină,2,Free risk
+zeaxanthin,zeaxantină,2,Free risk
+astaxanthin,astaxantină,2,Free risk
+canthaxanthin,canthaxantină,2,Free risk
+cryptoxanthin,cryptoxantină,2,Free risk
+violaxanthin,violaxantină,2,Free risk
+neoxanthin,neoxantină,2,Free risk
+luteoxanthin,luteoxantină,2,Free risk
+mutatoxanthin,mutatoxantină,2,Free risk
+citranaxanthin,citranaxantină,2,Free risk
+apocarotenal,apocarotenal,2,Free risk
+apocarotenoic acid,acid apocarotenoic,2,Free risk
+retinal,retinal,2,Free risk
+retinol,retinol,2,Free risk
+retinoic acid,acid retinoic,2,Free risk
+retinyl acetate,acetat de retinil,2,Free risk
+retinyl palmitate,palmitat de retinil,2,Free risk
+retinyl propionate,propionat de retinil,2,High risk
+retinyl butyrate,butirat de retinil,2,Free risk
+retinyl caproate,caproat de retinil,2,Free risk
+retinyl caprylate,caprilat de retinil,2,Free risk
+retinyl caprate,caprat de retinil,2,Free risk
+retinyl laurate,laurat de retinil,2,Free risk
+retinyl myristate,miristat de retinil,2,Free risk
+retinyl stearate,stearat de retinil,2,Free risk
+retinyl oleate,oleat de retinil,2,Free risk
+retinyl linoleate,linoleat de retinil,2,Free risk
+retinyl linolenate,linolenat de retinil,2,Free risk
+retinyl arachidonate,arachidonat de retinil,2,Free risk
+retinyl docosahexaenoate,docosahexaenoat de retinil,2,Free risk
+retinyl eicosapentaenoate,eicosapentaenoat de retinil,2,Free risk
+yogurt culture,cultură de iaurt,3,Medium risk
+kefir grains,boabe de kefir,3,Medium risk
+bacteria culture,cultură de bacterii,3,Medium risk
+lactic acid bacteria,bacterii de acid lactic,3,Medium risk
+probiotic culture,cultură probiotică,3,Medium risk
+starter culture,cultură starter,3,Medium risk
+rennet,cheag,3,Free risk
+enzymes,enzime,3,Medium risk
+papain,papaină,3,Medium risk
+bromelain,bromelaină,3,Medium risk
+ficin,ficină,3,Medium risk
+trypsin,tripsină,3,Medium risk
+chymosin,chimozină,3,Medium risk
+pepsin,pepsină,3,Medium risk
+lipase,lipază,3,Medium risk
+amylase,amilază,3,Medium risk
+protease,protează,3,Medium risk
+cellulase,celulază,3,Medium risk
+pectinase,pectinază,3,Medium risk
+lactase,lactază,3,Medium risk
+sucrase,sucrază,3,Medium risk
+maltase,maltază,3,Medium risk
+invertase,invertază,3,Medium risk
+glucose oxidase,glucoză oxidază,3,Medium risk
+catalase,catalază,3,Medium risk
+peroxidase,peroxidază,3,Medium risk
+polyphenol oxidase,polifenol oxidază,3,Medium risk
+tyrosinase,tirozinază,3,Medium risk
+laccase,lacază,3,Medium risk
+tannase,tanază,3,Medium risk
+phytase,fitază,3,Medium risk
+xylanase,xilanază,3,Medium risk
+beta glucanase,beta glucanază,3,Medium risk
+alpha amylase,alpha amilază,3,Medium risk
+beta amylase,beta amilază,3,Medium risk
+glucoamylase,glucoamilază,3,Medium risk
+pullulanase,pullulanază,3,Medium risk
+isoamylase,isoamilază,3,Medium risk
+debranching enzyme,enzimă de debranching,3,Medium risk
+branching enzyme,enzimă de branching,3,Medium risk
+starch synthase,sinteză de amidon,3,Medium risk
+starch phosphorylase,fosforilază de amidon,3,Medium risk
+starch branching enzyme,enzimă de branching pentru amidon,3,Medium risk
+starch debranching enzyme,enzimă de debranching pentru amidon,3,Medium risk
+starch synthase i,sinteză de amidon i,3,Medium risk
+starch synthase ii,sinteză de amidon ii,3,Medium risk
+starch synthase iii,sinteză de amidon iii,3,Medium risk
+starch synthase iv,sinteză de amidon iv,3,Medium risk
+starch synthase v,sinteză de amidon v,3,Medium risk
+starch synthase vi,sinteză de amidon vi,3,Medium risk
+starch synthase vii,sinteză de amidon vii,3,Medium risk
+starch synthase viii,sinteză de amidon viii,3,Medium risk
+starch synthase ix,sinteză de amidon ix,3,Medium risk
+starch synthase x,sinteză de amidon x,3,Medium risk
+starch synthase xi,sinteză de amidon xi,3,Medium risk
+starch synthase xii,sinteză de amidon xii,3,Medium risk
+starch synthase xiii,sinteză de amidon xiii,3,Medium risk
+starch synthase xiv,sinteză de amidon xiv,3,Medium risk
+starch synthase xv,sinteză de amidon xv,3,Medium risk
+starch synthase xvi,sinteză de amidon xvi,3,Medium risk
+starch synthase xvii,sinteză de amidon xvii,3,Medium risk
+starch synthase xviii,sinteză de amidon xviii,3,Medium risk
+starch synthase xix,sinteză de amidon xix,3,Medium risk
+starch synthase xx,sinteză de amidon xx,3,Medium risk
+starch synthase xxi,sinteză de amidon xxi,3,Medium risk
+starch synthase xxii,sinteză de amidon xxii,3,Medium risk
+starch synthase xxiii,sinteză de amidon xxiii,3,Medium risk
+starch synthase xxiv,sinteză de amidon xxiv,3,Medium risk
+starch synthase xxv,sinteză de amidon xxv,3,Medium risk
+starch synthase xxvi,sinteză de amidon xxvi,3,Medium risk
+starch synthase xxvii,sinteză de amidon xxvii,3,Medium risk
+starch synthase xxviii,sinteză de amidon xxviii,3,Medium risk
+starch synthase xxix,sinteză de amidon xxix,3,Medium risk
+starch synthase xxx,sinteză de amidon xxx,3,Medium risk
+starch synthase xxxi,sinteză de amidon xxxi,3,Medium risk
+starch synthase xxxii,sinteză de amidon xxxii,3,Medium risk
+starch synthase xxxiii,sinteză de amidon xxxiii,3,Medium risk
+starch synthase xxxiv,sinteză de amidon xxxiv,3,Medium risk
+starch synthase xxxv,sinteză de amidon xxxv,3,Medium risk
+starch synthase xxxvi,sinteză de amidon xxxvi,3,Medium risk
+starch synthase xxxvii,sinteză de amidon xxxvii,3,Medium risk
+starch synthase xxxviii,sinteză de amidon xxxviii,3,Medium risk
+starch synthase xxxix,sinteză de amidon xxxix,3,Medium risk
+starch synthase xl,sinteză de amidon xl,3,Medium risk
+starch synthase xli,sinteză de amidon xli,3,Medium risk
+starch synthase xlii,sinteză de amidon xlii,3,Medium risk
+starch synthase xliii,sinteză de amidon xliii,3,Medium risk
+starch synthase xliv,sinteză de amidon xliv,3,Medium risk
+starch synthase xlv,sinteză de amidon xlv,3,Medium risk
+starch synthase xlvi,sinteză de amidon xlvi,3,Medium risk
+starch synthase xlvii,sinteză de amidon xlvii,3,Medium risk
+starch synthase xlviii,sinteză de amidon xlviii,3,Medium risk
+starch synthase xlix,sinteză de amidon xlix,3,Medium risk
+starch synthase l,sinteză de amidon l,3,Medium risk
+starch synthase li,sinteză de amidon li,3,Medium risk
+starch synthase lii,sinteză de amidon lii,3,Medium risk
+starch synthase liii,sinteză de amidon liii,3,Medium risk
+starch synthase liv,sinteză de amidon liv,3,Medium risk
+starch synthase lv,sinteză de amidon lv,3,Medium risk
+starch synthase lvi,sinteză de amidon lvi,3,Medium risk
+starch synthase lvii,sinteză de amidon lvii,3,Medium risk
+starch synthase lviii,sinteză de amidon lviii,3,Medium risk
+starch synthase lix,sinteză de amidon lix,3,Medium risk
+starch synthase lx,sinteză de amidon lx,3,Medium risk
+starch synthase lxi,sinteză de amidon lxi,3,Medium risk
+starch synthase lxii,sinteză de amidon lxii,3,Medium risk
+starch synthase lxiii,sinteză de amidon lxiii,3,Medium risk
+starch synthase lxiv,sinteză de amidon lxiv,3,Medium risk
+starch synthase lxv,sinteză de amidon lxv,3,Medium risk
+starch synthase lxvi,sinteză de amidon lxvi,3,Medium risk
+starch synthase lxvii,sinteză de amidon lxvii,3,Medium risk
+starch synthase lxviii,sinteză de amidon lxviii,3,Medium risk
+starch synthase lxix,sinteză de amidon lxix,3,Medium risk
+starch synthase lxx,sinteză de amidon lxx,3,Medium risk
+starch synthase lxxi,sinteză de amidon lxxi,3,Medium risk
+starch synthase lxxii,sinteză de amidon lxxii,3,Medium risk
+starch synthase lxxiii,sinteză de amidon lxxiii,3,Medium risk
+starch synthase lxxiv,sinteză de amidon lxxiv,3,Medium risk
+starch synthase lxxv,sinteză de amidon lxxv,3,Medium risk
+starch synthase lxxvi,sinteză de amidon lxxvi,3,Medium risk
+starch synthase lxxvii,sinteză de amidon lxxvii,3,Medium risk
+starch synthase lxxviii,sinteză de amidon lxxviii,3,Medium risk
+starch synthase lxxix,sinteză de amidon lxxix,3,Medium risk
+starch synthase lxxx,sinteză de amidon lxxx,3,Medium risk
+starch synthase lxxxi,sinteză de amidon lxxxi,3,Medium risk
+starch synthase lxxxii,sinteză de amidon lxxxii,3,Medium risk
+starch synthase lxxxiii,sinteză de amidon lxxxiii,3,Medium risk
+starch synthase lxxxiv,sinteză de amidon lxxxiv,3,Medium risk
+starch synthase lxxxv,sinteză de amidon lxxxv,3,Medium risk
+starch synthase lxxxvi,sinteză de amidon lxxxvi,3,Medium risk
+starch synthase lxxxvii,sinteză de amidon lxxxvii,3,Medium risk
+starch synthase lxxxviii,sinteză de amidon lxxxviii,3,Medium risk
+starch synthase lxxxix,sinteză de amidon lxxxix,3,Medium risk
+starch synthase xc,sinteză de amidon xc,3,Medium risk
+starch synthase xci,sinteză de amidon xci,3,Medium risk
+starch synthase xcii,sinteză de amidon xcii,3,Medium risk
+starch synthase xciii,sinteză de amidon xciii,3,Medium risk
+starch synthase xciv,sinteză de amidon xciv,3,Medium risk
+starch synthase xcv,sinteză de amidon xcv,3,Medium risk
+starch synthase xcvi,sinteză de amidon xcvi,3,Medium risk
+starch synthase xcvii,sinteză de amidon xcvii,3,Medium risk
+starch synthase xcviii,sinteză de amidon xcviii,3,Medium risk
+starch synthase xcix,sinteză de amidon xcix,3,Medium risk
+starch synthase c,sinteză de amidon c,3,Medium risk
+aspartame,aspartam,4,High risk
+saccharin,sacharină,4,High risk
+acesulfame potassium,acesulfam potasiu,4,High risk
+sucralose,sucraloză,4,High risk
+neotame,neotam,4,High risk
+advantame,advantam,4,High risk
+cyclamate,ciclamat,4,High risk
+saccharin sodium,sacharină de sodiu,4,High risk
+acesulfame k,acesulfam k,4,High risk
+sodium benzoate,benzoat de sodiu,4,High risk
+potassium sorbate,sorbat de potasiu,4,High risk
+calcium propionate,propionat de calciu,4,High risk
+sodium nitrite,nitrit de sodiu,4,High risk
+sodium nitrate,nitrat de sodiu,4,High risk
+bha,butilhidroxianizol,4,High risk
+bht,butilhidroxitoluen,4,High risk
+tbhq,tert-butilhidrochinonă,4,High risk
+propyl gallate,galat de propil,4,High risk
+octyl gallate,galat de octil,4,High risk
+dodecyl gallate,galat de dodecil,4,High risk
+ascorbic acid,acid ascorbic,4,Medium risk
+citric acid,acid citric,4,Medium risk
+malic acid,acid malic,4,Medium risk
+tartaric acid,acid tartaric,4,Medium risk
+fumaric acid,acid fumaric,4,Medium risk
+adipic acid,acid adipic,4,Medium risk
+succinic acid,acid succinic,4,Medium risk
+gluconic acid,acid gluconic,4,Medium risk
+lactic acid,acid lactic,4,Medium risk
+acetic acid,acid acetic,4,Medium risk
+phosphoric acid,acid fosforic,4,High risk
+sulfuric acid,acid sulfuric,4,High risk
+hydrochloric acid,acid clorhidric,4,High risk
+sodium hydroxide,hidroxid de sodiu,4,High risk
+potassium hydroxide,hidroxid de potasiu,4,High risk
+calcium hydroxide,hidroxid de calciu,4,High risk
+magnesium hydroxide,hidroxid de magneziu,4,High risk
+sodium carbonate,carbonat de sodiu,4,High risk
+potassium carbonate,carbonat de potasiu,4,High risk
+calcium carbonate,carbonat de calciu,4,High risk
+magnesium carbonate,carbonat de magneziu,4,High risk
+sodium bicarbonate,bicarbonat de sodiu,4,High risk
+potassium bicarbonate,bicarbonat de potasiu,4,High risk
+calcium bicarbonate,bicarbonat de calciu,4,High risk
+magnesium bicarbonate,bicarbonat de magneziu,4,High risk
+sodium phosphate,fosfat de sodiu,4,High risk
+potassium phosphate,fosfat de potasiu,4,High risk
+calcium phosphate,fosfat de calciu,4,High risk
+magnesium phosphate,fosfat de magneziu,4,High risk
+monosodium glutamate,glutamat monosodic,4,High risk
+monopotassium glutamate,glutamat monopotasic,4,High risk
+calcium glutamate,glutamat de calciu,4,High risk
+magnesium glutamate,glutamat de magneziu,4,High risk
+disodium inosinate,inozinat disodic,4,High risk
+dipotassium inosinate,inozinat dipotasic,4,High risk
+calcium inosinate,inozinat de calciu,4,High risk
+magnesium inosinate,inozinat de magneziu,4,High risk
+disodium guanylate,guanylat disodic,4,High risk
+dipotassium guanylate,guanylat dipotasic,4,High risk
+calcium guanylate,guanylat de calciu,4,High risk
+magnesium guanylate,guanylat de magneziu,4,High risk
+ribonucleotides,ribonucleotide,4,High risk
+sodium ribonucleotides,ribonucleotide de sodiu,4,High risk
+potassium ribonucleotides,ribonucleotide de potasiu,4,High risk
+calcium ribonucleotides,ribonucleotide de calciu,4,High risk
+magnesium ribonucleotides,ribonucleotide de magneziu,4,High risk
+agar,agar,4,Medium risk
+alginic acid,acid alginic,4,Free risk
+sodium alginate,alginat de sodiu,4,Free risk
+potassium alginate,alginat de potasiu,4,Free risk
+calcium alginate,alginat de calciu,4,Free risk
+magnesium alginate,alginat de magneziu,4,Free risk
+tara gum,gumă de tara,4,Free risk
+gellan gum,gumă de gellan,4,High risk
+cellulose gum,gumă de celuloză,4,High risk
+methylcellulose,metilceluloză,4,High risk
+hydroxypropyl methylcellulose,hidroxipropil metilceluloză,4,High risk
+carboxymethylcellulose,carboximetilceluloză,4,High risk
+microcrystalline cellulose,celuloză microcristalină,4,High risk
+cellulose powder,praf de celuloză,4,High risk
+cellulose fiber,fibră de celuloză,4,High risk
+cellulose gel,gel de celuloză,4,High risk
+cellulose ester,ester de celuloză,4,High risk
+cellulose ether,eter de celuloză,4,High risk
+cellulose acetate,acetat de celuloză,4,High risk
+cellulose propionate,propionat de celuloză,4,High risk
+cellulose butyrate,butirat de celuloză,4,High risk
+cellulose valerate,valerat de celuloză,4,High risk
+cellulose caproate,caproat de celuloză,4,High risk
+cellulose caprylate,caprilat de celuloză,4,High risk
+cellulose caprate,caprat de celuloză,4,High risk
+cellulose laurate,laurat de celuloză,4,High risk
+cellulose myristate,miristat de celuloză,4,High risk
+cellulose palmitate,palmitat de celuloză,4,High risk
+cellulose stearate,stearat de celuloză,4,High risk
+cellulose oleate,oleat de celuloză,4,High risk
+cellulose linoleate,linoleat de celuloză,4,High risk
+cellulose linolenate,linolenat de celuloză,4,High risk
+cellulose arachidonate,arachidonat de celuloză,4,High risk
+cellulose docosahexaenoate,docosahexaenoat de celuloză,4,High risk
+cellulose eicosapentaenoate,eicosapentaenoat de celuloză,4,High risk
+cellulose docosapentaenoate,docosapentaenoat de celuloză,4,High risk
+cellulose eicosatetraenoate,eicosatetraenoat de celuloză,4,High risk
+cellulose docosatetraenoate,docosatetraenoat de celuloză,4,High risk
+cellulose eicosatrienoate,eicosatrienoat de celuloză,4,High risk
+cellulose docosatrienoate,docosatrienoat de celuloză,4,High risk
+cellulose eicosadienoate,eicosadienoat de celuloză,4,High risk
+cellulose docosadienoate,docosadienoat de celuloză,4,High risk
+cellulose eicosamonoenoate,eicosamonoeenoat de celuloză,4,High risk
+cellulose docosamonoenoate,docosamonoeenoat de celuloză,4,High risk
+cellulose eicosanoate,eicosanoat de celuloză,4,High risk
+cellulose docosanoate,docosanoat de celuloză,4,High risk
+cellulose tetracosanoate,tetracosanoat de celuloză,4,High risk
+cellulose hexacosanoate,hexacosanoat de celuloză,4,High risk
+cellulose octacosanoate,octacosanoat de celuloză,4,High risk
+cellulose triacontanoate,triacontanoat de celuloză,4,High risk
+cellulose dotriacontanoate,dotriacontanoat de celuloză,4,High risk
+cellulose tetratriacontanoate,tetratriacontanoat de celuloză,4,High risk
+cellulose hexatriacontanoate,hexatriacontanoat de celuloză,4,High risk
+cellulose octatriacontanoate,octatriacontanoat de celuloză,4,High risk
+cellulose tetracontanoate,tetracontanoat de celuloză,4,High risk
+cellulose dotetracontanoate,dotetracontanoat de celuloză,4,High risk
+cellulose tetratetracontanoate,tetratetracontanoat de celuloză,4,High risk
+cellulose hexatetracontanoate,hexatetracontanoat de celuloză,4,High risk
+cellulose octatetracontanoate,octatetracontanoat de celuloză,4,High risk
+cellulose pentacontanoate,pentacontanoat de celuloză,4,High risk
+cellulose dopentacontanoate,dopentacontanoat de celuloză,4,High risk
+cellulose tetrapentacontanoate,tetrapentacontanoat de celuloză,4,High risk
+cellulose hexapentacontanoate,hexapentacontanoat de celuloză,4,High risk
+cellulose octapentacontanoate,octapentacontanoat de celuloză,4,High risk
+cellulose hexacontanoate,hexacontanoat de celuloză,4,High risk
+cellulose dohexacontanoate,dohexacontanoat de celuloză,4,High risk
+cellulose tetrahexacontanoate,tetrahexacontanoat de celuloză,4,High risk
+cellulose hexahexacontanoate,hexahexacontanoat de celuloză,4,High risk
+cellulose octahexacontanoate,octahexacontanoat de celuloză,4,High risk
+cellulose heptacontanoate,heptacontanoat de celuloză,4,High risk
+cellulose doheptacontanoate,doheptacontanoat de celuloză,4,High risk
+cellulose tetraheptacontanoate,tetraheptacontanoat de celuloză,4,High risk
+cellulose hexaheptacontanoate,hexaheptacontanoat de celuloză,4,High risk
+cellulose octaheptacontanoate,octaheptacontanoat de celuloză,4,High risk
+cellulose octacontanoate,octacontanoat de celuloză,4,High risk
+cellulose dooctacontanoate,dooctacontanoat de celuloză,4,High risk
+cellulose tetraoctacontanoate,tetraoctacontanoat de celuloză,4,High risk
+cellulose hexaoctacontanoate,hexaoctacontanoat de celuloză,4,High risk
+cellulose octaoctacontanoate,octaoctacontanoat de celuloză,4,High risk
+cellulose nonacontanoate,nonacontanoat de celuloză,4,High risk
+cellulose dononacontanoate,dononacontanoat de celuloză,4,High risk
+cellulose tetranonacontanoate,tetranonacontanoat de celuloză,4,High risk
+cellulose hexanonacontanoate,hexanonacontanoat de celuloză,4,High risk
+cellulose octanonacontanoate,octanonacontanoat de celuloză,4,High risk
+cellulose hectanoate,hectanoat de celuloză,4,High risk
+cellulose dohectanoate,dohectanoat de celuloză,4,High risk
+cellulose tetrahectanoate,tetrahectanoat de celuloză,4,High risk
+cellulose hexahectanoate,hexahectanoat de celuloză,4,High risk
+cellulose octahectanoate,octahectanoat de celuloză,4,High risk
+wheat flour,faina alba din grau,2,Low risk
+sugar,zahar,2,Free risk
+vanilla extract,aroma de vanilie,2,Medium risk
+carbon dioxide,dioxid de carbon,4,Free risk
+arabic gum,guma arabica,4,High risk
+sodium citrate,citrati de sodiu,4,Free risk
+natural flavors,arome naturale,4,Medium risk
+glycerol esters of wood rosin,esteri glicerici ai rasinilor din lemn,4,Medium risk
+grapefruit juice concentrate,suc de grepfruit roz din concentrat,3,Free risk
+phenylalanine,fenilalamina,4,High risk
+disodium phosphate,difosfat disodic,4,High risk
+cocoa butter,unt de cacao,2,Low risk
+cocoa mass,masa de cacao,2,Free risk
+soy lecithin,lecitina de soia,3,Medium risk
+sunflower lecithin,lecitina de floarea-soarelui,3,Medium risk
+glucose syrup,sirop de glucoza,3,Medium risk
+coconut fat,grasime de cocos,2,Free risk
+cocoa powder,pudra de cacao,2,Free risk
+eggs,oua,1,Free risk
+glycerol,glicerina,3,Medium risk
+sorbitol,sorbitol,3,Medium risk
+modified corn starch,amidon modificat de porumb,3,Free risk
+hazelnut paste,pasta de alune de padure,2,Free risk
+titanium dioxide,dioxid de titan,4,High risk
+lard,slanina,1,Free risk
+sodium ascorbate,ascorbat de sodiu,4,Free risk
+maltodextrin,maltodextrina,3,Medium risk
+spices,condimente,2,Low risk
+lactic cultures,culturi lactice,3,Free risk
+vanillin,vanilina,4,High risk
+shea butter,shea,2,Low risk
+polyglycerol polyricinoleate,poliricinoleat de poliglicerol,4,High risk
+polysorbate 60,monostearat de polioxietilen sorbitan,4,High risk
+caramel color,colorant caramel,4,High risk
+xanthan gum,guma xantan,4,High risk
+whey powder,zer praf,3,Medium risk
+ethyl alcohol,alcool etilic,4,High risk
+dextrose,dextroza,3,Free risk
+gluten,wheat gluten,3,Free risk
+cellulose,celuloza,4,High risk
+di and polyglycerides of fatty acids,di si poligliceridici ai acizilor grasi,4,Free risk
+mono and diglycerides of fatty acids,mono si digliceride ale acizilor grasi,4,High risk
+caramel,caramel,4,Free risk
+inverted sugar syrup,sirop de zahăr invertit,3,Medium risk
+sodium propionate,propionat de sodiu,4,High risk
+sodium stearoyl-2-lactylate,stearoil-2-lactilat de sodiu,4,Free risk
+grape juice concentrate,suc de struguri din concentrat,3,Free risk
+sorbic acid,acid sorbic,4,Free risk
+starch,amidon,2,Free risk
+hydrogenated palm oil,total hidrogenat de palmier,4,High risk
+cream powder,praf de frisca,3,Medium risk
+natural vanilla flavor,aroma naturala de vanilie,4,Low risk
+butter fat,grasime din unt,2,Low risk
+cream,smantana,2,Free risk
+sugar,zahăr,2,Free risk
