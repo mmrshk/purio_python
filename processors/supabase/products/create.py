@@ -10,6 +10,7 @@ import math
 import json
 import time
 import requests
+import datetime
 from typing import Optional, List
 from processors.helpers.additives.additives_relation_manager import AdditivesRelationManager
 
@@ -204,6 +205,9 @@ def validate_record(record):
     if 'additives_updated_at' in record:
         validated['additives_updated_at'] = record['additives_updated_at'] if record['additives_updated_at'] else None
     
+    if 'imported_at' in record:
+        validated['imported_at'] = record['imported_at'] if record['imported_at'] else None
+    
     return validated
 
 def get_existing_products():
@@ -242,6 +246,10 @@ def process_csv_for_supabase(csv_path):
     
     # Initialize additives relation manager
     additives_manager = AdditivesRelationManager()
+    
+    # Set the same imported_at timestamp for all products in this batch
+    imported_at = datetime.datetime.now().isoformat()
+    print(f"Setting imported_at timestamp for this batch: {imported_at}")
     
     # Read the CSV file with barcode as string
     df = pd.read_csv(csv_path, dtype={'barcode': str})
@@ -296,6 +304,7 @@ def process_csv_for_supabase(csv_path):
                 'health_score': row.get('health_score'),
                 'external_id': row.get('external_id'),
                 'additives_tags': additives_tags,
+                'imported_at': imported_at,
             }
             
             # Check if product already exists
@@ -412,15 +421,14 @@ def process_single_file(csv_path):
         # Analyze data structure before saving
         analyze_data_structure(records, table_name)
         
-        # Ask for confirmation before saving
-        # response = input("\nDo you want to save this data to Supabase? (y/n): ")
-        # if response.lower() != 'y':
-        #     print("Skipping this file...")
-        #     return
-        
         # Save to Supabase with additives relations
         save_to_supabase(records, table_name, additives_manager)
         print(f"Successfully saved data from {csv_path} to Supabase table '{table_name}'")
+        
+        # Show the imported_at timestamp for this batch
+        if records:
+            sample_imported_at = records[0].get('imported_at')
+            print(f"All products in this batch have imported_at: {sample_imported_at}")
         
         # Print additives relations statistics
         additives_manager.print_statistics()

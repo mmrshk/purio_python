@@ -16,7 +16,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from fuzzywuzzy import process
 
 class IngredientsChecker:
-    def __init__(self, csv_path: str = "ingredients_clean.csv"):
+    def __init__(self, csv_path: str = "ingredients.csv"):
         """
         Initialize the ingredients checker.
         
@@ -432,7 +432,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Check ingredients from CSV file')
-    parser.add_argument('--csv-path', default='ingredients_clean.csv', 
+    parser.add_argument('--csv-path', default='ingredients.csv', 
                        help='Path to ingredients CSV file')
     
     args = parser.parse_args()
