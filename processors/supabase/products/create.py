@@ -33,13 +33,22 @@ def fetch_additives_from_off(barcode: str) -> Optional[List[str]]:
         
     Returns:
         List of additives tags or None if not found/error
-    """
+"""
     if not barcode or barcode == 'nan' or barcode == '':
         return None
         
     try:
         url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
-        response = requests.get(url, timeout=5)
+        
+        # Configure headers to be more respectful to the API
+        headers = {
+            'User-Agent': 'FoodFacts-HealthScoring/1.0 (https://github.com/mmrshk/food_facts)',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        
+        # Increase timeout and add retry logic
+        response = requests.get(url, headers=headers, timeout=15)
         
         if response.status_code == 200:
             data = response.json()
@@ -62,6 +71,12 @@ def fetch_additives_from_off(barcode: str) -> Optional[List[str]]:
         else:
             return None
             
+    except requests.exceptions.Timeout:
+        print(f"Timeout fetching additives for barcode {barcode}")
+        return None
+    except requests.exceptions.RequestException as e:
+        print(f"Network error fetching additives for barcode {barcode}: {e}")
+        return None
     except Exception as e:
         print(f"Error fetching additives for barcode {barcode}: {e}")
         return None
@@ -178,13 +193,20 @@ def validate_record(record):
     validated = {}
     
     # Text fields
-    for field in ['name', 'description', 'barcode', 'category', 'ingredients', 'supermarket_url', 'image_front_url']:
+    for field in ['name', 'description', 'barcode', 'category', 'ingredients', 'supermarket_url', 'image_front_url', 'external_id']:
         if field in record:
-            validated[field] = str(record[field]) if record[field] is not None else None
-    
-    # Integer fields
-    if 'health_score' in record:
-        validated['health_score'] = int(record['health_score']) if record['health_score'] is not None else None
+            value = record[field]
+            if value is not None:
+                # Clean up numeric fields that might have .0 suffix
+                if field in ['barcode', 'external_id']:
+                    value_str = str(value)
+                    if value_str.endswith('.0'):
+                        value_str = value_str[:-2]
+                    validated[field] = value_str
+                else:
+                    validated[field] = str(value)
+            else:
+                validated[field] = None
     
     # Array field
     if 'additional_images_urls' in record:
@@ -247,10 +269,6 @@ def process_csv_for_supabase(csv_path):
     # Initialize additives relation manager
     additives_manager = AdditivesRelationManager()
     
-    # Set the same imported_at timestamp for all products in this batch
-    imported_at = datetime.datetime.now().isoformat()
-    print(f"Setting imported_at timestamp for this batch: {imported_at}")
-    
     # Read the CSV file with barcode as string
     df = pd.read_csv(csv_path, dtype={'barcode': str})
     
@@ -288,7 +306,7 @@ def process_csv_for_supabase(csv_path):
                     print(f"    ❌ Failed to fetch additives")
                 
                 # Add small delay to avoid overwhelming the API
-                time.sleep(0.5)
+                time.sleep(1.0)
             
             record = {
                 'name': row['name'],
@@ -301,10 +319,9 @@ def process_csv_for_supabase(csv_path):
                 'additional_images_urls': row['image_urls'][1:] if len(row['image_urls']) > 1 else [],
                 'specifications': row['specifications'],
                 'nutritional': row['nutritional_info'],
-                'health_score': row.get('health_score'),
                 'external_id': row.get('external_id'),
                 'additives_tags': additives_tags,
-                'imported_at': imported_at,
+                'imported_at': row.get('imported_at'),
             }
             
             # Check if product already exists
@@ -371,11 +388,31 @@ def save_to_supabase(records, table_name, additives_manager=None):
                 print("Problematic record:", batch[0] if batch else "No records")
                 raise
             
-            result = supabase.table(table_name).insert(batch).execute()
+            try:
+                print(f"Attempting to insert {len(batch)} records to Supabase...")
+                print(f"Table name: {table_name}")
+                print(f"First record keys: {list(batch[0].keys())}")
+                result = supabase.table(table_name).insert(batch).execute()
+                print(f"Supabase insert successful!")
+            except Exception as supabase_error:
+                print(f"Raw Supabase error: {supabase_error}")
+                print(f"Error type: {type(supabase_error)}")
+                print(f"Error args: {supabase_error.args}")
+                print(f"Error str: {str(supabase_error)}")
+                print(f"Error repr: {repr(supabase_error)}")
+                if hasattr(supabase_error, '__dict__'):
+                    print(f"Error dict: {supabase_error.__dict__}")
+                raise
             
             # Check if the response contains error information
             if hasattr(result, 'error') and result.error:
                 print(f"Supabase error: {result.error}")
+                print(f"Error type: {type(result.error)}")
+                print(f"Error details: {getattr(result.error, 'details', 'No details')}")
+                print(f"Error hint: {getattr(result.error, 'hint', 'No hint')}")
+                print(f"Error message: {getattr(result.error, 'message', 'No message')}")
+                print(f"Error code: {getattr(result.error, 'code', 'No code')}")
+                print(f"Full error object: {vars(result.error)}")
                 raise Exception(f"Supabase error: {result.error}")
             
             # Print success message with record count
@@ -398,8 +435,12 @@ def save_to_supabase(records, table_name, additives_manager=None):
             
     except Exception as e:
         print(f"Error saving to Supabase: {str(e)}")
+        print(f"Error type: {type(e)}")
         if hasattr(e, 'response'):
             print(f"Response: {e.response}")
+        if hasattr(e, 'details'):
+            print(f"Details: {e.details}")
+        print(f"First record in batch: {batch[0] if batch else 'No records'}")
         raise
 
 def process_single_file(csv_path):
@@ -412,25 +453,19 @@ def process_single_file(csv_path):
     print(f"\nProcessing {csv_path}")
     
     try:
-        # Process CSV data
         records, additives_manager = process_csv_for_supabase(csv_path)
-        
-        # Get table name from the subcategory folder name
-        table_name = 'Products'
+        table_name = 'products'
         
         # Analyze data structure before saving
         analyze_data_structure(records, table_name)
         
-        # Save to Supabase with additives relations
         save_to_supabase(records, table_name, additives_manager)
         print(f"Successfully saved data from {csv_path} to Supabase table '{table_name}'")
         
-        # Show the imported_at timestamp for this batch
         if records:
             sample_imported_at = records[0].get('imported_at')
             print(f"All products in this batch have imported_at: {sample_imported_at}")
-        
-        # Print additives relations statistics
+
         additives_manager.print_statistics()
         
     except Exception as e:

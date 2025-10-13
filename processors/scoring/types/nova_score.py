@@ -96,17 +96,28 @@ class NovaScoreCalculator:
     
     def fetch_nova_from_off(self, ean=None, product_name=None):
         """Fetch NOVA score from Open Food Facts API."""
+        # Configure headers to be more respectful to the API
+        headers = {
+            'User-Agent': 'FoodFacts-HealthScoring/1.0 (https://github.com/mmrshk/food_facts)',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        
         # Try by barcode first
         if ean:
             url = f"https://world.openfoodfacts.org/api/v0/product/{ean}.json"
             try:
-                resp = requests.get(url, timeout=5)
+                resp = requests.get(url, headers=headers, timeout=15)
                 if resp.status_code == 200:
                     data = resp.json()
                     product = data.get('product', {})
                     nova_group = product.get('nova-group')
                     if nova_group:
                         return int(nova_group)
+            except requests.exceptions.Timeout:
+                print(f"Timeout fetching NOVA by EAN: {ean}")
+            except requests.exceptions.RequestException as e:
+                print(f"Network error fetching NOVA by EAN: {e}")
             except Exception as e:
                 print(f"Error fetching NOVA by EAN: {e}")
         
@@ -120,7 +131,7 @@ class NovaScoreCalculator:
                 "json": 1
             }
             try:
-                resp = requests.get(url, params=params, timeout=5)
+                resp = requests.get(url, headers=headers, params=params, timeout=15)
                 if resp.status_code == 200:
                     data = resp.json()
                     products = data.get('products', [])
@@ -128,6 +139,10 @@ class NovaScoreCalculator:
                         nova_group = products[0].get('nova-group')
                         if nova_group:
                             return int(nova_group)
+            except requests.exceptions.Timeout:
+                print(f"Timeout fetching NOVA by name: {product_name}")
+            except requests.exceptions.RequestException as e:
+                print(f"Network error fetching NOVA by name: {e}")
             except Exception as e:
                 print(f"Error fetching NOVA by name: {e}")
         return None

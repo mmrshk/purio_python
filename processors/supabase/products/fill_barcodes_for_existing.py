@@ -20,7 +20,7 @@ def get_product_id_from_html(product_url):
     Scrape the Auchan product page to extract the productId (external_id) using BeautifulSoup.
     """
     try:
-        resp = requests.get(product_url, timeout=5)
+        resp = requests.get(product_url, timeout=15)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, 'html.parser')
         prod_id_container = soup.find('span', class_='vtex-product-identifier-0-x-product-identifier--productId')
@@ -38,7 +38,7 @@ def get_ean_from_auchan_api(product_id):
     """
     try:
         api_url = f"https://www.auchan.ro/api/catalog_system/pub/products/search?fq=productId:{product_id}"
-        resp = requests.get(api_url, timeout=5)
+            resp = requests.get(api_url, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         if data and isinstance(data, list):

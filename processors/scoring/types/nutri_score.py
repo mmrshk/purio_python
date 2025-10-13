@@ -51,16 +51,27 @@ class NutriScoreCalculator:
     }
 
     def fetch_nutriscore_from_off(self, ean=None, product_name=None):
+        # Configure headers to be more respectful to the API
+        headers = {
+            'User-Agent': 'FoodFacts-HealthScoring/1.0 (https://github.com/mmrshk/food_facts)',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        
         if ean:
             url = f"https://world.openfoodfacts.org/api/v0/product/{ean}.json"
             try:
-                resp = requests.get(url, timeout=5)
+                resp = requests.get(url, headers=headers, timeout=30)
                 if resp.status_code == 200:
                     data = resp.json()
                     product = data.get('product', {})
                     nutriscore = product.get('nutriscore_grade')
 
                     return self.NUTRISCORE_MAP.get(nutriscore)
+            except requests.exceptions.Timeout:
+                print(f"Timeout fetching NutriScore by EAN: {ean}")
+            except requests.exceptions.RequestException as e:
+                print(f"Network error fetching NutriScore by EAN: {e}")
             except Exception as e:
                 print(f"Error fetching NutriScore by EAN: {e}")
 
@@ -73,7 +84,7 @@ class NutriScoreCalculator:
                 "json": 1
             }
             try:
-                resp = requests.get(url, params=params, timeout=5)
+                resp = requests.get(url, headers=headers, params=params, timeout=30)
                 if resp.status_code == 200:
                     data = resp.json()
                     products = data.get('products', [])
@@ -81,6 +92,10 @@ class NutriScoreCalculator:
                         nutriscore = products[0].get('nutriscore_grade')
 
                         return self.NUTRISCORE_MAP.get(nutriscore)
+            except requests.exceptions.Timeout:
+                print(f"Timeout fetching NutriScore by name: {product_name}")
+            except requests.exceptions.RequestException as e:
+                print(f"Network error fetching NutriScore by name: {e}")
             except Exception as e:
                 print(f"Error fetching NutriScore by name: {e}")
         return None

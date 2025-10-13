@@ -34,7 +34,7 @@ def log_and_print(message, log_file):
     log_file.write(message + '\n')
     log_file.flush()  # Ensure immediate write to file
 
-def update_all_scores():
+def update_all_scores(imported_at_timestamp=None):
     # Create log file with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_filename = f"scoring_results_{timestamp}.log"
@@ -43,16 +43,25 @@ def update_all_scores():
         log_and_print(f"Health Scoring Analysis - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", log_file)
         log_and_print("="*80, log_file)
         
-        # Fetch all products from Supabase that need scoring
-        # Get products missing ALL scores (final_score, nutri_score, additives_score, and nova_score)
-        result = supabase.table('products').select('*').is_('final_score', 'null').is_('nutri_score', 'null').is_('additives_score', 'null').is_('nova_score', 'null').execute()
+        # Fetch products from Supabase that need scoring
+        if imported_at_timestamp:
+            # Get products with specific imported_at timestamp that are missing final_score
+            result = supabase.table('products').select('*').eq('imported_at', imported_at_timestamp).is_('final_score', 'null').execute()
+            log_and_print(f"Filtering by imported_at timestamp: {imported_at_timestamp}", log_file)
+        else:
+            # Get all products missing final_score (original behavior)
+            result = supabase.table('products').select('*').is_('final_score', 'null').execute()
+            log_and_print("Processing all products missing final_score", log_file)
         if hasattr(result, 'error') and result.error:
             error_msg = f"Error fetching products: {result.error}"
             log_and_print(error_msg, log_file)
             return
         products = result.data
         
-        log_and_print(f"Found {len(products)} products to analyze (missing ALL scores)", log_file)
+        if imported_at_timestamp:
+            log_and_print(f"Found {len(products)} products to analyze (imported_at: {imported_at_timestamp}, missing final_score)", log_file)
+        else:
+            log_and_print(f"Found {len(products)} products to analyze (missing final_score)", log_file)
         log_and_print("", log_file)
 
         nutri_calc = NutriScoreCalculator()
