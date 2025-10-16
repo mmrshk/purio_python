@@ -16,9 +16,8 @@ class NovaScoreCalculator:
     
     def __init__(self):
         """Initialize the NOVA score calculator with ingredients checker."""
-        from ingredients.check_ingredients import IngredientsChecker
-        ingredients_path = os.path.join(project_root, 'ingredients', 'ingredients.csv')
-        self.ingredients_checker = IngredientsChecker(ingredients_path)
+        from ingredients.supabase_ingredients_checker import SupabaseIngredientsChecker
+        self.ingredients_checker = SupabaseIngredientsChecker()
     
     def get_nova_distribution_from_ingredients(self, product_data):
         """

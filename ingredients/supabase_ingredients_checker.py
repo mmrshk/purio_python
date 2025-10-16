@@ -66,7 +66,7 @@ class SupabaseIngredientsChecker:
             for ingredient in ingredients_list:
                 ingredient_id = ingredient.get('id')
                 name = ingredient.get('name', '').lower().strip()
-                name_ro = ingredient.get('name_ro', '').lower().strip()
+                name_ro = ingredient.get('ro_name', '').lower().strip()
                 nova_score = ingredient.get('nova_score', 1)
                 
                 # Store both English and Romanian versions
@@ -74,7 +74,7 @@ class SupabaseIngredientsChecker:
                     ingredients[name] = {
                         'id': ingredient_id,
                         'name': ingredient.get('name'),
-                        'name_ro': ingredient.get('name_ro'),
+                        'name_ro': ingredient.get('ro_name'),
                         'nova_score': nova_score
                     }
                 
@@ -82,7 +82,7 @@ class SupabaseIngredientsChecker:
                     ingredients[name_ro] = {
                         'id': ingredient_id,
                         'name': ingredient.get('name'),
-                        'name_ro': ingredient.get('name_ro'),
+                        'name_ro': ingredient.get('ro_name'),
                         'nova_score': nova_score
                     }
             

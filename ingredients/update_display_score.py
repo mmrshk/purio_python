@@ -97,17 +97,17 @@ def update_display_scores():
         log_and_print("DISPLAY SCORE UPDATE - " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"), log_file)
         log_and_print("="*80, log_file)
         
-        # Fetch all products with final_score
-        log_and_print("📖 Fetching products with final_score from Supabase...", log_file)
+        # Fetch products with final_score but without display_score
+        log_and_print("📖 Fetching products with final_score but without display_score from Supabase...", log_file)
         
         try:
-            result = supabase.table('products').select('id, name, final_score').not_.is_('final_score', 'null').execute()
+            result = supabase.table('products').select('id, name, final_score, display_score').not_.is_('final_score', 'null').is_('display_score', 'null').execute()
             if hasattr(result, 'error') and result.error:
                 log_and_print(f"❌ Error fetching products: {result.error}", log_file)
                 return
             
             products = result.data
-            log_and_print(f"✅ Fetched {len(products)} products with final_score from Supabase", log_file)
+            log_and_print(f"✅ Fetched {len(products)} products with final_score but without display_score from Supabase", log_file)
             
         except Exception as e:
             log_and_print(f"❌ Error connecting to Supabase: {e}", log_file)

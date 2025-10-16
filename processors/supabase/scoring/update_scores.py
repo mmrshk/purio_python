@@ -28,6 +28,55 @@ def calculate_final_health_score(nutri, additives, nova):
 
     return int(round(nutri * 0.4 + additives * 0.3 + nova * 0.3))
 
+def check_product_high_risk_additives(product_id: str) -> bool:
+    """
+    Check if a product has high-risk additives.
+    
+    Args:
+        product_id: Product ID to check
+        
+    Returns:
+        True if product has high-risk additives, False otherwise
+    """
+    try:
+        # Get additives relations for this product
+        result = supabase.table('product_additives_relations').select('additive_id').eq('product_id', product_id).execute()
+        
+        if hasattr(result, 'error') and result.error:
+            return False
+        
+        additive_ids = [relation.get('additive_id') for relation in result.data]
+        
+        if not additive_ids:
+            return False
+        
+        # Check if any of these additives are high-risk
+        high_risk_result = supabase.table('additives').select('id').in_('id', additive_ids).eq('is_high_risk', True).execute()
+        
+        if hasattr(high_risk_result, 'error') and high_risk_result.error:
+            return False
+        
+        return len(high_risk_result.data) > 0
+        
+    except Exception as e:
+        return False
+
+def calculate_display_score(final_score: int, has_high_risk_additive: bool) -> int:
+    """
+    Calculate display_score based on final_score and high-risk additives.
+    
+    Args:
+        final_score: The calculated final health score
+        has_high_risk_additive: Whether the product has high-risk additives
+        
+    Returns:
+        The display score (capped at 49 if high-risk additives present)
+    """
+    if has_high_risk_additive:
+        return min(final_score, 49)
+    else:
+        return final_score
+
 def log_and_print(message, log_file):
     """Print to console and write to log file"""
     print(message)
@@ -319,14 +368,30 @@ def update_all_scores(imported_at_timestamp=None):
             if final_score is not None:
                 log_and_print(f"  Formula: ({final_nutri} × 0.4) + ({final_additives} × 0.3) + ({final_nova} × 0.3) = {final_score}", log_file)
                 log_and_print(f"  ✅ Final Health Score: {final_score}", log_file)
+                
+                # Calculate display score based on high-risk additives
+                log_and_print(f"\n📱 DISPLAY SCORE CALCULATION:", log_file)
+                log_and_print(f"{'-'*50}", log_file)
+                
+                has_high_risk_additives = check_product_high_risk_additives(product_id)
+                display_score = calculate_display_score(final_score, has_high_risk_additives)
+                
+                log_and_print(f"  High-risk additives detected: {has_high_risk_additives}", log_file)
+                log_and_print(f"  Display Score: {display_score}", log_file)
+                
+                if has_high_risk_additives and final_score > 49:
+                    log_and_print(f"  ⚠️  Score capped at 49 due to high-risk additives", log_file)
+                elif has_high_risk_additives and final_score <= 49:
+                    log_and_print(f"  ℹ️  Score unchanged (≤49) despite high-risk additives", log_file)
+                else:
+                    log_and_print(f"  ✅ Score unchanged (no high-risk additives)", log_file)
 
             try:
-                update_data = {
-                    'updated_at': datetime.now().isoformat()
-                }
+                update_data = { 'updated_at': datetime.now().isoformat() }
                 
                 if final_score is not None:
                     update_data['final_score'] = final_score
+                    update_data['display_score'] = display_score
                 if nutri_score is not None:
                     update_data['nutri_score'] = nutri_score
                     update_data['nutri_score_set_by'] = nutri_source

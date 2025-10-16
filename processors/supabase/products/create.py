@@ -234,21 +234,21 @@ def validate_record(record):
 
 def get_existing_products():
     """
-    Fetch all existing product names from Supabase.
+    Fetch all existing product barcodes from Supabase.
     
     Returns:
-        set: Set of existing product names
+        set: Set of existing product barcodes
     """
     try:
-        result = supabase.table('products').select('name').execute()
+        result = supabase.table('products').select('barcode').not_.is_('barcode', 'null').execute()
         if hasattr(result, 'error') and result.error:
             print(f"Error fetching existing products: {result.error}")
             return set()
         
-        # Extract names from the response and convert to lowercase for case-insensitive comparison
-        existing_names = {item['name'].lower() for item in result.data if item.get('name')}
-        print(f"Found {len(existing_names)} existing products")
-        return existing_names
+        # Extract barcodes from the response
+        existing_barcodes = {item['barcode'] for item in result.data if item.get('barcode')}
+        print(f"Found {len(existing_barcodes)} existing products with barcodes")
+        return existing_barcodes
     except Exception as e:
         print(f"Error fetching existing products: {str(e)}")
         return set()
@@ -324,9 +324,9 @@ def process_csv_for_supabase(csv_path):
                 'imported_at': row.get('imported_at'),
             }
             
-            # Check if product already exists
-            if record['name'] and record['name'].lower() in existing_products:
-                print(f"Skipping duplicate product: {record['name']}")
+            # Check if product already exists (by barcode)
+            if record.get('barcode') and record['barcode'] in existing_products:
+                print(f"Skipping duplicate product (barcode): {record['name']} (barcode: {record['barcode']})")
                 duplicate_records += 1
                 continue
             
@@ -337,8 +337,8 @@ def process_csv_for_supabase(csv_path):
             if validated_record:
                 records.append(validated_record)
                 # Add to existing products set to prevent duplicates within the same batch
-                if validated_record['name']:
-                    existing_products.add(validated_record['name'].lower())
+                if validated_record.get('barcode'):
+                    existing_products.add(validated_record['barcode'])
             else:
                 skipped_records += 1
                 
