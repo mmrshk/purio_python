@@ -23,14 +23,31 @@ class NovaScoreCalculator:
         """
         Get NOVA score distribution from product ingredients.
         
-        Args: product_data: Product data containing specifications with ingredients
-        Returns: Dictionary with NOVA score distribution {1: count, 2: count, 3: count, 4: count}
+        Args: 
+            product_data: Product data containing specifications with ingredients
+        Returns: 
+            Dictionary with NOVA score distribution {1: count, 2: count, 3: count, 4: count} 
+            or None if unable to get distribution.
+            Will use parsed_ingredients.nova_scores if available, otherwise parses from ingredients text.
         """
 
         specs = product_data.get('specifications', {})
         if not isinstance(specs, dict):
             return None
         
+        # First, check if parsed_ingredients already exists with nova_scores
+        parsed_ingredients = specs.get('parsed_ingredients', {})
+        if isinstance(parsed_ingredients, dict) and parsed_ingredients.get('nova_scores'):
+            nova_scores = parsed_ingredients.get('nova_scores', [])
+            if nova_scores and len(nova_scores) > 0:
+                # Convert list to distribution dictionary
+                distribution = {1: 0, 2: 0, 3: 0, 4: 0}
+                for score in nova_scores:
+                    if score in distribution:
+                        distribution[score] += 1
+                return distribution
+        
+        # Fallback: parse ingredients from scratch
         ingredients_text = specs.get('ingredients', '')
         if not ingredients_text:
             return None
@@ -41,7 +58,16 @@ class NovaScoreCalculator:
             'specifications': specs
         })
         
-        return result.get('nova_scores', [])
+        # Convert list of scores to distribution dictionary
+        nova_scores_list = result.get('nova_scores', [])
+        if not nova_scores_list:
+            return None
+        
+        distribution = {1: 0, 2: 0, 3: 0, 4: 0}
+        for score in nova_scores_list:
+            if score in distribution:
+                distribution[score] += 1
+        return distribution
     
     def calculate_nova_from_distribution(self, nova_distribution):
         """

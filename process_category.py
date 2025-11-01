@@ -5,10 +5,8 @@ from processors.scraper.auchan_scraper import AuchanScraper
 from processors.supabase.products.create import process_single_file
 from processors.barcodes.barcode_filler import fill_barcodes_in_csv
 from processors.helpers.map_specifications_and_nutritional_info import process_csv_columns
-from processors.scoring.health_score_filler import fill_health_scores_in_csv
 from processors.supabase.scoring.update_scores import update_all_scores
 import os
-import time
 import json
 import pandas as pd
 import datetime
