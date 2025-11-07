@@ -27,6 +27,11 @@ try:
 except ImportError:
     from ingredients_inserter import IngredientsInserter
 
+try:
+    from .ingredient_blacklist import is_blacklisted
+except ImportError:
+    from ingredient_blacklist import is_blacklisted
+
 load_dotenv()
 
 class SupabaseIngredientsChecker:
@@ -261,16 +266,83 @@ class SupabaseIngredientsChecker:
         except Exception:
             pass
 
-    def _try_ai(self, product_name: str, description: str) -> List[str]:
+    def _try_ai(self, product_name: str, description: str, ingredients_text: str = None) -> List[str]:
+        """
+        Try AI parsing. If ingredients_text is provided, use it instead of product name.
+        
+        Args:
+            product_name: Product name
+            description: Product description
+            ingredients_text: Optional ingredients text to parse (preferred over product name)
+            
+        Returns:
+            List of extracted ingredients
+        """
         if not (self.use_ai_fallback and self.ai_parser):
             return []
-        ai_result = self.ai_parser.parse_ingredients_from_name(product_name, description)
+        
+        # If ingredients text is provided, use it as context instead of product name
+        if ingredients_text:
+            # Use AI to parse from ingredients text (better than product name)
+            print(f"🤖 Using AI to parse ingredients from ingredients text (not product name)")
+            context = f"Ingredients list: {ingredients_text}"
+            if product_name:
+                context += f"\nProduct: {product_name}"
+            ai_result = self._try_ai_from_text(context)
+        else:
+            # Fall back to product name if no ingredients text
+            ai_result = self.ai_parser.parse_ingredients_from_name(product_name, description)
+        
         if ai_result.get('extracted_ingredients'):
             ai_ings = ai_result['extracted_ingredients']
             self.stats['products_with_ai_ingredients'] += 1
             self._log_ai_ingredients(ai_ings)
             return ai_ings
         return []
+    
+    def _try_ai_from_text(self, context: str) -> Dict[str, Any]:
+        """
+        Use AI to parse ingredients from a given text context.
+        
+        Args:
+            context: Text to parse (could be ingredients list, product name, etc.)
+            
+        Returns:
+            Dictionary with parsing results
+        """
+        if not (self.use_ai_fallback and self.ai_parser):
+            return {'extracted_ingredients': []}
+        
+        try:
+            # Create a prompt that focuses on parsing the provided text
+            prompt = self.ai_parser._create_ingredient_prompt(context)
+            
+            # Make AI request
+            response = self.ai_parser._make_ai_request(prompt)
+            
+            if response:
+                # Parse AI response
+                ingredients = self.ai_parser._parse_ai_response(response)
+                
+                return {
+                    'extracted_ingredients': ingredients,
+                    'ai_generated': True,
+                    'source': 'ai_parser'
+                }
+            else:
+                return {
+                    'extracted_ingredients': [],
+                    'ai_generated': False,
+                    'source': 'ai_parser_failed'
+                }
+        except Exception as e:
+            print(f"   ❌ AI parsing from text error: {str(e)}")
+            return {
+                'extracted_ingredients': [],
+                'ai_generated': False,
+                'source': 'ai_parser_error',
+                'error': str(e)
+            }
 
     def _auto_insert_unmatched(self, extracted_ingredients: List[str], matches: List[Dict[str, Any]]):
         if not (self.auto_insert_new_ingredients and self.ingredients_inserter and extracted_ingredients):
@@ -278,25 +350,76 @@ class SupabaseIngredientsChecker:
         try:
             matched_names = set(m['matched_name'].lower().strip() for m in matches)
             matched_originals = set(m.get('original', '').lower().strip() for m in matches if m.get('original'))
+            
+            # Blacklist for non-ingredient terms that might slip through
+            non_ingredient_blacklist = {'air', 'sun', 'time', 'heat', 'light', 'temperature', 'drying', 'curing', 'aging'}
+            
             for ing in extracted_ingredients:
-                ing_norm = ing.lower().strip()
-                # Skip auto-insert if this AI ingredient was matched (by original text) or equals any matched name
+                # Clean the ingredient: remove trailing punctuation, parentheses, etc.
+                cleaned_ing = self._clean_ingredient_for_insertion(ing)
+                if not cleaned_ing or len(cleaned_ing) < 2:
+                    print(f"   ⏭️  Skipping invalid ingredient (too short/empty): {ing}")
+                    continue
+                
+                ing_norm = cleaned_ing.lower().strip()
+                
+                # Skip auto-insert if this ingredient was matched (by original text) or equals any matched name
                 if ing_norm in matched_originals or ing_norm in matched_names:
                     continue
+                
+                # Check blacklist
+                if is_blacklisted(ing_norm):
+                    print(f"   ⏭️  Skipping blacklisted ingredient: {cleaned_ing}")
+                    continue
+                
+                # Skip if it's a blacklisted non-ingredient term
+                if ing_norm in non_ingredient_blacklist:
+                    print(f"   ⏭️  Skipping non-ingredient term: {cleaned_ing}")
+                    continue
+                
                 # Otherwise, try inserting as a new ingredient
                 res = self.ingredients_inserter.insert_ingredient(
-                    name=ing,
-                    ro_name=ing,
-                    nova_score=1,
+                    name=cleaned_ing,
+                    ro_name=cleaned_ing,
+                    nova_score=None,  # AI-generated ingredients don't have a NOVA score yet
                     created_by="ai_parser",
                     visible=False
                 )
                 if res.get('success') and res.get('action') == 'inserted':
-                    print(f"   💾 Inserted new ingredient to DB: {ing}")
+                    print(f"   💾 Inserted new ingredient to DB: {cleaned_ing}")
                 elif res.get('reason') == 'duplicate':
-                    print(f"   ⏭️  Skipped existing ingredient in DB: {ing}")
+                    print(f"   ⏭️  Skipped existing ingredient in DB: {cleaned_ing}")
         except Exception as e:
             print(f"⚠️  Auto-insert unmatched ingredients failed: {str(e)}")
+    
+    def _clean_ingredient_for_insertion(self, ingredient: str) -> str:
+        """
+        Clean ingredient name before insertion: remove trailing punctuation, parentheses, etc.
+        
+        Args:
+            ingredient: Raw ingredient string
+            
+        Returns:
+            Cleaned ingredient name
+        """
+        if not ingredient:
+            return ""
+        
+        cleaned = ingredient.strip()
+        
+        # Remove trailing punctuation: ), ], }, etc.
+        cleaned = re.sub(r'[)\]},;]+$', '', cleaned)
+        
+        # Remove leading punctuation: (, [, {, etc.
+        cleaned = re.sub(r'^[(\[{]+', '', cleaned)
+        
+        # Remove trailing periods, commas, colons
+        cleaned = re.sub(r'[.,:;]+$', '', cleaned)
+        
+        # Remove extra whitespace
+        cleaned = cleaned.strip()
+        
+        return cleaned
     
     def fuzzy_match_ingredient(self, ingredient: str, threshold: int = 90) -> Optional[Dict[str, Any]]:
         """
@@ -405,7 +528,7 @@ class SupabaseIngredientsChecker:
         ingredient_is_generic_bean = any(word in ingredient_lower for word in bean_related) and not any(word in ingredient_lower for word in coffee_related + ['cocoa', 'cacao'])
         
         if match_has_coffee and ingredient_is_generic_bean and score < 98:
-            return False
+                return False
         
         return True
     
@@ -425,9 +548,9 @@ class SupabaseIngredientsChecker:
         self.stats['products_processed'] += 1
         
         # If product was already parsed by AI previously, reuse stored results to avoid re-processing
-        reused = self._reuse_parsed_ai_results(specs, product_name)
-        if reused is not None:
-            return reused
+        # reused = self._reuse_parsed_ai_results(specs, product_name)
+        # if reused is not None:
+        #     return reused
         
         ingredients_text = specs.get('ingredients', '')
         extracted_ingredients = []
@@ -436,7 +559,7 @@ class SupabaseIngredientsChecker:
         # Try to extract ingredients from specifications first
         if ingredients_text:
             print(f"📋 Found ingredients text: {ingredients_text[:100]}{'...' if len(ingredients_text) > 100 else ''}")
-            extracted_ingredients = self.extract_ingredients_from_text(ingredients_text)
+        extracted_ingredients = self.extract_ingredients_from_text(ingredients_text)
             source = 'specifications'
             self.stats['products_with_ingredients'] += 1
         
@@ -444,7 +567,7 @@ class SupabaseIngredientsChecker:
         if not extracted_ingredients and self.use_ai_fallback and self.ai_parser:
             print(f"🤖 No ingredients found, trying AI parsing for: {product_name}")
             description = specs.get('description', '') or product.get('description', '')
-            ai_ings = self._try_ai(product_name, description)
+            ai_ings = self._try_ai(product_name, description, ingredients_text=None)
             source = 'ai_parser'
             if ai_ings:
                 extracted_ingredients = ai_ings
@@ -456,10 +579,12 @@ class SupabaseIngredientsChecker:
         matches, nova_scores, matched_count, not_matched_count = self._compute_matches(extracted_ingredients)
 
         # If we extracted ingredients but matched none, try AI as a secondary fallback
+        # IMPORTANT: If ingredients_text exists, use it instead of product name (much better results)
         if extracted_ingredients and matched_count == 0 and self.use_ai_fallback and self.ai_parser:
             print("🤖 No fuzzy matches found, trying AI parsing to improve ingredient list")
             description = specs.get('description', '') or product.get('description', '')
-            ai_ings = self._try_ai(product_name, description)
+            # Use ingredients_text if available (better than product name), otherwise fall back to product name
+            ai_ings = self._try_ai(product_name, description, ingredients_text=ingredients_text if ingredients_text else None)
             source = 'ai_parser'
             if ai_ings:
                 extracted_ingredients = ai_ings
@@ -469,8 +594,9 @@ class SupabaseIngredientsChecker:
             else:
                 print("   ❌ AI could not improve ingredient extraction")
 
-        # Optionally insert unmatched AI ingredients into DB
-        if source == 'ai_parser':
+        # Optionally insert unmatched ingredients into DB (regardless of source)
+        # If ingredients were extracted but not matched, they should be added to DB
+        if extracted_ingredients and (matched_count < len(extracted_ingredients)):
             self._auto_insert_unmatched(extracted_ingredients, matches)
 
         # Now safely update stats once based on final lists

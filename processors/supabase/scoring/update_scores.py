@@ -6,6 +6,7 @@ from datetime import datetime
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.insert(0, project_root)
 
+from processors.scoring.product_scorer import ProductScorer
 from processors.scoring.types.nutri_score import NutriScoreCalculator
 from processors.scoring.types.additives_score import AdditivesScoreCalculator
 from processors.scoring.types.nova_score import NovaScoreCalculator
@@ -20,13 +21,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Supabase credentials are not set in environment variables.")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-def calculate_final_health_score(nutri, additives, nova):
-    # If any score is None, return None (cannot calculate final score)
-    if nutri is None or additives is None or nova is None:
-        return None
-
-    return int(round(nutri * 0.4 + additives * 0.3 + nova * 0.3))
 
 def check_product_high_risk_additives(product_id: str) -> bool:
     """
@@ -60,22 +54,6 @@ def check_product_high_risk_additives(product_id: str) -> bool:
         
     except Exception as e:
         return False
-
-def calculate_display_score(final_score: int, has_high_risk_additive: bool) -> int:
-    """
-    Calculate display_score based on final_score and high-risk additives.
-    
-    Args:
-        final_score: The calculated final health score
-        has_high_risk_additive: Whether the product has high-risk additives
-        
-    Returns:
-        The display score (capped at 49 if high-risk additives present)
-    """
-    if has_high_risk_additive:
-        return min(final_score, 49)
-    else:
-        return final_score
 
 def log_and_print(message, log_file):
     """Print to console and write to log file"""
@@ -113,6 +91,15 @@ def update_all_scores(imported_at_timestamp=None):
             log_and_print(f"Found {len(products)} products to analyze (missing final_score)", log_file)
         log_and_print("", log_file)
 
+        # Initialize ProductScorer (with auto_save_to_db=False since we handle DB updates ourselves)
+        scorer = ProductScorer(
+            dry_run=False,
+            supabase_client=supabase,
+            auto_insert_new_ingredients=True,
+            auto_save_to_db=False  # We handle DB updates manually in this script
+        )
+        
+        # Also initialize individual calculators for detailed logging
         nutri_calc = NutriScoreCalculator()
         additives_calc = AdditivesScoreCalculator()
         nova_calc = NovaScoreCalculator()
@@ -131,14 +118,30 @@ def update_all_scores(imported_at_timestamp=None):
             log_and_print(f"PRODUCT {i}/{len(products)}: {product_name} (ID: {product_id})", log_file)
             log_and_print(f"{'='*80}", log_file)
             
-            # Calculate NutriScore with detailed breakdown
+            # Use ProductScorer to calculate all scores (handles extracted > matched check)
+            scores = scorer.calculate_health_scores(product_data)
+            
+            # Extract scores for logging
+            nutri_score = scores.get('nutri_score')
+            nutri_source = scores.get('nutri_source')
+            additives_score = scores.get('additives_score')
+            nova_score = scores.get('nova_score')
+            nova_source = scores.get('nova_source')
+            final_score = scores.get('final_score')
+            display_score = scores.get('display_score')
+            
+            # Calculate NutriScore with detailed breakdown (for logging)
             log_and_print(f"\n📊 NUTRI-SCORE CALCULATION:", log_file)
             log_and_print(f"{'-'*50}", log_file)
             nutri_result = nutri_calc.calculate(product_data)
             if isinstance(nutri_result, tuple):
-                nutri_score, nutri_source = nutri_result
+                detailed_nutri_score, detailed_nutri_source = nutri_result
             else:
-                nutri_score, nutri_source = nutri_result, 'unknown'
+                detailed_nutri_score, detailed_nutri_source = nutri_result, 'unknown'
+            
+            # Use detailed scores for logging (ProductScorer already calculated them correctly)
+            nutri_score = detailed_nutri_score
+            nutri_source = detailed_nutri_source
             
             log_and_print(f"  Source: {nutri_source}", log_file)
             
@@ -242,7 +245,7 @@ def update_all_scores(imported_at_timestamp=None):
                     if value and key in ['calories_per_100g_or_100ml', 'sugar', 'fat', 'protein']:
                         log_and_print(f"    {key}: {value}", log_file)
             
-            # Calculate AdditivesScore with detailed breakdown
+            # Calculate AdditivesScore with detailed breakdown (for logging)
             log_and_print(f"\n🧪 ADDITIVES SCORE CALCULATION:", log_file)
             log_and_print(f"{'-'*50}", log_file)
             additives_result = additives_calc.calculate_from_product_additives(product_id) if product_id != 'N/A' else None
@@ -267,10 +270,10 @@ def update_all_scores(imported_at_timestamp=None):
                 
                 log_and_print(f"  Final Score: {additives_score}", log_file)
             else:
-                additives_score = None
+                additives_score = scores.get('additives_score')  # Use from ProductScorer
                 log_and_print(f"  Could not calculate additives score (no product_id or unknown risk levels)", log_file)
             
-            # Calculate NovaScore with detailed breakdown
+            # Calculate NovaScore with detailed breakdown (for logging)
             log_and_print(f"\n🌱 NOVA SCORE CALCULATION:", log_file)
             log_and_print(f"{'-'*50}", log_file)
             nova_result = nova_calc.calculate(product_data)
@@ -329,52 +332,52 @@ def update_all_scores(imported_at_timestamp=None):
             
             log_and_print(f"  Final Score: {nova_score}", log_file)
             
-            # Calculate final health score
+            # Calculate final health score (using ProductScorer results which already check extracted > matched)
             log_and_print(f"\n🏆 FINAL HEALTH SCORE CALCULATION:", log_file)
             log_and_print(f"{'-'*50}", log_file)
             
-            # Check if we already have individual scores from database
-            existing_nutri = product_data.get('nutri_score')
-            existing_additives = product_data.get('additives_score')
-            existing_nova = product_data.get('nova_score')
-            existing_final = product_data.get('final_score')
+            # Check if ingredients were extracted but not all matched (ProductScorer already did this)
+            specs = product_data.get('specifications', {})
+            if isinstance(specs, str):
+                try:
+                    import json
+                    specs = json.loads(specs)
+                except:
+                    specs = {}
             
-            log_and_print(f"  📊 Current product scores:", log_file)
-            log_and_print(f"    Existing NutriScore: {existing_nutri}", log_file)
-            log_and_print(f"    Existing AdditivesScore: {existing_additives}", log_file)
-            log_and_print(f"    Existing NovaScore: {existing_nova}", log_file)
-            log_and_print(f"    Existing FinalScore: {existing_final}", log_file)
-            
-            # Use calculated scores if available, otherwise use existing scores
-            final_nutri = nutri_score if nutri_score is not None else existing_nutri
-            final_additives = additives_score if additives_score is not None else existing_additives
-            final_nova = nova_score if nova_score is not None else existing_nova
+            parsed_ingredients = specs.get('parsed_ingredients', {})
+            if isinstance(parsed_ingredients, dict):
+                extracted_count = len(parsed_ingredients.get('extracted_ingredients', []))
+                matched_count = len(parsed_ingredients.get('matches', []))
+                
+                if extracted_count > 0 and extracted_count > matched_count:
+                    log_and_print(f"  ⚠️  Cannot calculate final score: {extracted_count} ingredients extracted but only {matched_count} matched", log_file)
+                    log_and_print(f"  ⚠️  Missing ingredient data would make score inaccurate", log_file)
+                    final_score = None
+                    display_score = None
+                else:
+                    # Use scores from ProductScorer (already calculated with all checks)
+                    final_score = scores.get('final_score')
+                    display_score = scores.get('display_score')
+            else:
+                # Use scores from ProductScorer (already calculated)
+                final_score = scores.get('final_score')
+                display_score = scores.get('display_score')
             
             # Log which scores we're using
-            if nutri_score is None and existing_nutri is not None:
-                log_and_print(f"  📋 Using existing NutriScore: {existing_nutri}", log_file)
-            if additives_score is None and existing_additives is not None:
-                log_and_print(f"  📋 Using existing AdditivesScore: {existing_additives}", log_file)
-            if nova_score is None and existing_nova is not None:
-                log_and_print(f"  📋 Using existing NovaScore: {existing_nova}", log_file)
-            
-            final_score = calculate_final_health_score(final_nutri, final_additives, final_nova)
-            
-            log_and_print(f"  NutriScore: {final_nutri} (weight: 40%)", log_file)
-            log_and_print(f"  AdditivesScore: {final_additives} (weight: 30%)", log_file)
-            log_and_print(f"  NovaScore: {final_nova} (weight: 30%)", log_file)
-            
+            log_and_print(f"  NutriScore: {nutri_score} (weight: 40%)", log_file)
+            log_and_print(f"  AdditivesScore: {additives_score} (weight: 30%)", log_file)
+            log_and_print(f"  NovaScore: {nova_score} (weight: 30%)", log_file)
 
             if final_score is not None:
-                log_and_print(f"  Formula: ({final_nutri} × 0.4) + ({final_additives} × 0.3) + ({final_nova} × 0.3) = {final_score}", log_file)
+                log_and_print(f"  Formula: ({nutri_score} × 0.4) + ({additives_score} × 0.3) + ({nova_score} × 0.3) = {final_score}", log_file)
                 log_and_print(f"  ✅ Final Health Score: {final_score}", log_file)
                 
-                # Calculate display score based on high-risk additives
+                # Display score calculation (from ProductScorer)
                 log_and_print(f"\n📱 DISPLAY SCORE CALCULATION:", log_file)
                 log_and_print(f"{'-'*50}", log_file)
                 
                 has_high_risk_additives = check_product_high_risk_additives(product_id)
-                display_score = calculate_display_score(final_score, has_high_risk_additives)
                 
                 log_and_print(f"  High-risk additives detected: {has_high_risk_additives}", log_file)
                 log_and_print(f"  Display Score: {display_score}", log_file)
@@ -385,12 +388,16 @@ def update_all_scores(imported_at_timestamp=None):
                     log_and_print(f"  ℹ️  Score unchanged (≤49) despite high-risk additives", log_file)
                 else:
                     log_and_print(f"  ✅ Score unchanged (no high-risk additives)", log_file)
+            else:
+                log_and_print(f"  ❌ Final Health Score: Cannot calculate (missing individual scores or incomplete ingredient data)", log_file)
 
             try:
                 update_data = { 'updated_at': datetime.now().isoformat() }
                 
+                # Use scores from ProductScorer (which includes extracted > matched check)
                 if final_score is not None:
                     update_data['final_score'] = final_score
+                    if display_score is not None:
                     update_data['display_score'] = display_score
                 if nutri_score is not None:
                     update_data['nutri_score'] = nutri_score

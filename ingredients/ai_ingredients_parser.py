@@ -17,8 +17,10 @@ from dotenv import load_dotenv
 
 try:
     from .ingredients_inserter import IngredientsInserter
+    from .ingredient_blacklist import is_blacklisted
 except ImportError:
     from ingredients_inserter import IngredientsInserter
+    from ingredient_blacklist import is_blacklisted
 
 load_dotenv()
 
@@ -138,11 +140,34 @@ class AIIngredientsParser:
         Create a prompt for AI to extract ingredients.
         
         Args:
-            context: Product name and description
+            context: Product name/description or ingredients list text
             
         Returns:
             Formatted prompt for AI
         """
+        # Detect if context is an ingredients list or product name
+        is_ingredients_list = context.strip().lower().startswith('ingredients list:')
+        
+        if is_ingredients_list:
+            # Context is an ingredients list - parse it directly
+            return f"""You are a food ingredient expert. Parse the following ingredients list and extract individual ingredient names.
+
+{context}
+
+Please extract ONLY the edible ingredients and additives from the list above. 
+- Normalize ingredient names (e.g., "frunze de ceai verde" → "green tea leaves" or "ceai verde")
+- Extract percentages and quantities separately, do not include them in ingredient names
+- If an ingredient is listed with a percentage (e.g., "frunze de ceai verde 55%"), extract just "ceai verde" or "green tea"
+- Split compound ingredients appropriately (e.g., "frunze de lotus" → "lotus leaves" or "lotus")
+- Exclude non-ingredient terms like: air, sun, time, heat, light, temperature, drying, curing, aging
+- NEVER include quantities or measurements as ingredients (e.g., "5mg", "100g", "2%", "10ml" are NOT ingredients)
+
+Return ONLY a JSON array of normalized ingredient names, like this:
+["ingredient1", "ingredient2", "ingredient3"]
+
+Do not include explanations, just the JSON array. If you cannot determine ingredients, return an empty array: []"""
+        else:
+            # Context is product name/description - infer ingredients
         return f"""You are a food ingredient expert. Based on the product name and description, extract the most likely ingredients.
 
 Product: {context}
@@ -156,6 +181,7 @@ Important rules:
 - Only include edible ingredients or approved food additives (e.g., E-codes), not processes or environmental factors
 - Exclude non-ingredients such as: air, sun, time, heat, light, temperature, drying, curing, aging, process descriptions
 - Do not infer brand slogans or preparation methods as ingredients
+- NEVER include quantities or measurements as ingredients (e.g., "5mg", "100g", "2%", "10ml" are NOT ingredients)
 
 Return ONLY a JSON array of ingredient names, like this:
 ["ingredient1", "ingredient2", "ingredient3"]
@@ -223,7 +249,14 @@ Do not include explanations, just the JSON array. If you cannot determine ingred
                 if isinstance(ingredient, str):
                     ingredient = ingredient.strip()
                     if ingredient and len(ingredient) > 1:
-                        cleaned_ingredients.append(ingredient)
+                        # Clean the ingredient name (extract from patterns like "fier: 2" -> "fier")
+                        cleaned = self._clean_ingredient_name(ingredient)
+                        if cleaned and len(cleaned) > 1:
+                            # Validate ingredient (check blacklist, quantity-only, etc.)
+                            if self._is_valid_ingredient(cleaned):
+                                cleaned_ingredients.append(cleaned)
+                            else:
+                                print(f"   ⏭️  Skipping invalid ingredient: {cleaned}")
             
             return cleaned_ingredients
             
@@ -261,7 +294,249 @@ Do not include explanations, just the JSON array. If you cannot determine ingred
                 if part and len(part) > 1:
                     ingredients.append(part)
         
-        return ingredients[:10]  # Limit to 10 ingredients max
+        # Clean and filter ingredients
+        cleaned_ingredients = []
+        for ing in ingredients[:10]:
+            cleaned = self._clean_ingredient_name(ing)
+            if cleaned and len(cleaned) > 1:
+                if self._is_valid_ingredient(cleaned):
+                    cleaned_ingredients.append(cleaned)
+                else:
+                    print(f"   ⏭️  Skipping invalid ingredient: {cleaned}")
+        return cleaned_ingredients
+    
+    def _clean_ingredient_name(self, ingredient: str) -> str:
+        """
+        Clean ingredient name by extracting the actual ingredient from patterns like:
+        - "fier: 2" -> "fier"
+        - "zinc: 2" -> "zinc"
+        - "alte valori nutritionale: fosfor: 315mg/100g" -> "fosfor"
+        - "fosfor: 315mg/100g" -> "fosfor"
+        - "flori de tei" -> "tei"
+        - "flori de hibiscus" -> "hibiscus"
+        - "faina de grau" -> "grau"
+        - "grasime vegetala de palmier" -> "palmier"
+        
+        Args:
+            ingredient: Raw ingredient string
+            
+        Returns:
+            Cleaned ingredient name
+        """
+        if not ingredient:
+            return ""
+        
+        ingredient = ingredient.strip()
+        
+        # Pattern 0: Extract from compound descriptions
+        # "flori de X" -> "X"
+        match = re.match(r'^flori\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            # Remove quantities if any
+            extracted = re.sub(r'[\s\d\.]+(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg|/100g|/100ml).*$', '', extracted, flags=re.IGNORECASE)
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "frunze de X" or "frunze si flori de X" -> "X"
+        match = re.match(r'^frunze(?:\s+si\s+flori)?\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            extracted = re.sub(r'[\s\d\.]+(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg|/100g|/100ml).*$', '', extracted, flags=re.IGNORECASE)
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "faina de X" or "faina integrala de X" -> "X"
+        match = re.match(r'^faina(?:\s+integrala)?\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "grasime vegetala de X" -> "X"
+        match = re.match(r'^grasime\s+vegetala\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "nectar de X" -> "X"
+        match = re.match(r'^nectar\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "suc de X" -> "X"
+        match = re.match(r'^suc\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "pasta de X" -> "X"
+        match = re.match(r'^pasta\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "pulpa de X" -> "X"
+        match = re.match(r'^pulpa\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "carnea de X" -> "X"
+        match = re.match(r'^carnea\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "ficat de X" -> "X"
+        match = re.match(r'^ficat\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "radacina de X" -> "X"
+        match = re.match(r'^radacina\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            # Remove parenthetical info like "(liquiritiae radix)"
+            extracted = re.sub(r'\s*\([^)]+\)\s*', '', extracted)
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "boabe X" -> "X" (for coffee beans)
+        match = re.match(r'^boabe\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # "crupe de X" or "fulgi de X" -> "X"
+        match = re.match(r'^(?:crupe|fulgi)\s+de\s+(.+)$', ingredient, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip()
+            if extracted and not self._is_quantity_only(extracted):
+                return extracted.strip()
+        
+        # Pattern 1: "ingredient: quantity" or "ingredient: 2"
+        # Extract the part before the colon if it's followed by numbers/units
+        match = re.match(r'^([^:]+?)\s*:\s*[\d\.]+', ingredient)
+        if match:
+            potential_name = match.group(1).strip()
+            # If the extracted name is not a quantity itself, return it
+            if potential_name and not self._is_quantity_only(potential_name):
+                return potential_name
+        
+        # Pattern 2: Complex strings like "alte valori nutritionale: fosfor: 315mg/100g"
+        # Extract the ingredient name (usually the last meaningful word before quantities)
+        # Look for pattern: "text: ingredient: quantity" or "text: ingredient quantity"
+        parts = re.split(r'[:]', ingredient)
+        if len(parts) > 1:
+            # Skip common Romanian labels at the start
+            skip_labels = ['alte valori nutritionale', 'valori nutritionale', 'nutritional values', 
+                          'alte valori', 'valori', 'nutritional']
+            
+            # Get the last part before quantities (usually the actual ingredient)
+            for part in reversed(parts):
+                part = part.strip()
+                part_lower = part.lower()
+                
+                # Skip if it's a known label
+                if part_lower in skip_labels:
+                    continue
+                
+                # Remove quantities and units from the end
+                part_cleaned = re.sub(r'[\s\d\.]+(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg|/100g|/100ml).*$', '', part, flags=re.IGNORECASE)
+                part_cleaned = part_cleaned.strip()
+                
+                # If it's a valid ingredient name (not empty, not quantity-only)
+                if part_cleaned and len(part_cleaned) > 1 and not self._is_quantity_only(part_cleaned):
+                    # Skip if it's a label
+                    if part_cleaned.lower() not in skip_labels:
+                        return part_cleaned
+        
+        # Pattern 3: Remove quantities and units from the end
+        # e.g., "fosfor 315mg/100g" -> "fosfor"
+        cleaned = re.sub(r'[\s\d\.]+(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg|/100g|/100ml).*$', '', ingredient, flags=re.IGNORECASE)
+        cleaned = cleaned.strip()
+        
+        # Pattern 4: Remove trailing numbers after colon (e.g., "fier: 2" -> "fier")
+        cleaned = re.sub(r'\s*:\s*[\d\.\s]+$', '', cleaned)
+        
+        return cleaned.strip()
+    
+    def _is_quantity_only(self, ingredient: str) -> bool:
+        """
+        Check if an ingredient is just a quantity/measurement (e.g., "5mg", "100g", "2%").
+        
+        Args:
+            ingredient: Ingredient name to check
+            
+        Returns:
+            True if the ingredient is just a quantity/measurement, False otherwise
+        """
+        if not ingredient:
+            return True
+        
+        # Remove whitespace and convert to lowercase
+        ingredient = ingredient.strip().lower()
+        
+        # Pattern 1: Just a number with unit abbreviation at the end (e.g., "5mg", "9mg", "100g")
+        # This is the most common pattern
+        if re.match(r'^\d+\.?\d*\s*(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg)\s*$', ingredient):
+            return True
+        
+        # Pattern 2: Starts with numbers and ends with units (e.g., "315mg/100g")
+        if re.match(r'^[\d\.\s]+(mg|g|kg|ml|l|cl|dl|%|percent|ppm|ppb|iu|units?|mcg|µg)', ingredient):
+            # If there's no meaningful text before the number, it's quantity-only
+            if not re.match(r'^[a-z]+', ingredient):
+                return True
+        
+        # Pattern 3: Just a number (likely a percentage or quantity)
+        if re.match(r'^\d+\.?\d*\s*%?\s*$', ingredient):
+            return True
+        
+        # Pattern 4: Just numbers with slashes or ratios (e.g., "315/100", "2/1")
+        if re.match(r'^[\d\.\s/]+$', ingredient):
+            return True
+        
+        return False
+    
+    def _is_valid_ingredient(self, ingredient: str) -> bool:
+        """
+        Check if an ingredient is valid (not blacklisted, not quantity-only, etc.).
+        
+        Args:
+            ingredient: Ingredient name to validate
+            
+        Returns:
+            True if the ingredient is valid, False otherwise
+        """
+        if not ingredient or len(ingredient) < 2:
+            return False
+        
+        ingredient_lower = ingredient.lower().strip()
+        
+        # Check if it's quantity-only
+        if self._is_quantity_only(ingredient_lower):
+            return False
+        
+        # Check blacklist (uses the external blacklist module)
+        if is_blacklisted(ingredient_lower):
+            return False
+        
+        # Reject if it's too short after cleaning (likely a fragment)
+        if len(ingredient_lower) < 2:
+            return False
+        
+        return True
     
     def _insert_ingredients_to_database(self, ingredients: List[str]) -> List[Dict[str, Any]]:
         """
@@ -285,7 +560,7 @@ Do not include explanations, just the JSON array. If you cannot determine ingred
                 result = self.ingredients_inserter.insert_ingredient(
                     name=ingredient,
                     ro_name=ingredient,  # Using same name for both languages
-                    nova_score=1,  # Default NOVA score for AI-generated ingredients
+                    nova_score=None,  # AI-generated ingredients don't have a NOVA score yet
                     created_by="ai_parser",
                     visible=False
                 )

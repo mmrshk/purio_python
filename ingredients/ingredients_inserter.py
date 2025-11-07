@@ -39,7 +39,7 @@ class IngredientsInserter:
             'duplicate_ingredients': 0
         }
     
-    def insert_ingredient(self, name: str, ro_name: str, nova_score: int = 1,
+    def insert_ingredient(self, name: str, ro_name: str, nova_score: Optional[int] = 1,
                          created_by: str = "ai_parser", visible: bool = True) -> Dict[str, Any]:
         """
         Insert a single ingredient into the Supabase ingredients table.
@@ -47,7 +47,7 @@ class IngredientsInserter:
         Args:
             name: English name of the ingredient
             ro_name: Romanian name of the ingredient
-            nova_score: NOVA score (1-4, default: 1)
+            nova_score: NOVA score (1-4, or None for AI-generated ingredients, default: 1)
             created_by: Source of the ingredient (default: "ai_parser")
             visible: False
             

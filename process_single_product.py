@@ -22,11 +22,7 @@ from supabase import create_client
 project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, project_root)
 
-from processors.scoring.types.nutri_score import NutriScoreCalculator
-from processors.scoring.types.additives_score import AdditivesScoreCalculator
-from processors.scoring.types.nova_score import NovaScoreCalculator
-from processors.scoring.fetch_additives_from_off import OpenFoodFactsAdditivesFetcher
-from ingredients.supabase_ingredients_checker import SupabaseIngredientsChecker
+from processors.scoring.product_scorer import ProductScorer
 
 # Load environment variables
 load_dotenv()
@@ -50,14 +46,15 @@ class SingleProductProcessor:
         
         self.supabase = create_client(self.supabase_url, self.supabase_key)
         
-        # Initialize calculators
-        self.nutri_calc = NutriScoreCalculator()
-        self.additives_calc = AdditivesScoreCalculator()
-        self.nova_calc = NovaScoreCalculator()
-        self.ingredients_checker = SupabaseIngredientsChecker(auto_insert_new_ingredients=True)
-        self.additives_fetcher = OpenFoodFactsAdditivesFetcher(dry_run=dry_run)
+        # Initialize unified product scorer (encapsulates all processing logic)
+        self.scorer = ProductScorer(
+            dry_run=dry_run,
+            supabase_client=self.supabase,
+            auto_insert_new_ingredients=True,
+            auto_save_to_db=True
+        )
         
-        # Statistics
+        # Statistics (mapped from scorer stats for backward compatibility)
         self.stats = {
             'product_found': False,
             'ingredients_parsed': False,
@@ -68,26 +65,6 @@ class SingleProductProcessor:
             'errors': []
         }
     
-    def _check_product_high_risk_additives(self, product_id: str) -> bool:
-        """
-        Check if a product has high-risk additives using relations in the database.
-        """
-        try:
-            # Get additive relations for product
-            rel_result = self.supabase.table('product_additives_relations').select('additive_id').eq('product_id', product_id).execute()
-            if hasattr(rel_result, 'error') and rel_result.error:
-                return False
-            additive_ids = [rel.get('additive_id') for rel in rel_result.data]
-            if not additive_ids:
-                return False
-            # Check if any additives are marked high risk
-            hr_result = self.supabase.table('additives').select('id').in_('id', additive_ids).eq('is_high_risk', True).execute()
-            if hasattr(hr_result, 'error') and hr_result.error:
-                return False
-            return len(hr_result.data) > 0
-        except Exception:
-            return False
-
     def fetch_product(self, product_id: str) -> Optional[Dict[str, Any]]:
         """
         Fetch a single product from Supabase by ID.
@@ -144,7 +121,7 @@ class SingleProductProcessor:
         try:
             print(f"\n🧪 Parsing ingredients...")
             
-            # Check if product has ingredients
+            # Check if product has ingredients (for display)
             specs = product.get('specifications', {})
             if isinstance(specs, str):
                 try:
@@ -156,10 +133,10 @@ class SingleProductProcessor:
             if not ingredients_text:
                 print("   ℹ️  No ingredients found in product (will try AI via checker)")
             else:
-                print(f"   📋 Ingredients text: {ingredients_text[:100]}{'...' if len(ingredients_text) > 100 else ''}")
+            print(f"   📋 Ingredients text: {ingredients_text[:100]}{'...' if len(ingredients_text) > 100 else ''}")
             
-            # Parse ingredients using the checker (will use AI if needed)
-            parsing_result = self.ingredients_checker.check_product_ingredients(product)
+            # Use ProductScorer to parse ingredients
+            parsing_result = self.scorer.parse_ingredients(product)
             
             extracted_ingredients = parsing_result.get('extracted_ingredients', [])
             matches = parsing_result.get('matches', [])
@@ -180,51 +157,14 @@ class SingleProductProcessor:
                         group_names = {1: 'Unprocessed', 2: 'Culinary', 3: 'Processed', 4: 'Ultra-processed'}
                         print(f"      NOVA {nova_group} ({group_names[nova_group]}): {count}")
             
-            self.stats['ingredients_parsed'] = True
-            
-            # Prepare parsed_ingredients data
-            parsed_ingredients_data = {
-                'extracted_ingredients': parsing_result.get('extracted_ingredients', []),
-                'matches': parsing_result.get('matches', []),
-                'nova_scores': parsing_result.get('nova_scores', []),
-                'ai_generated': bool(parsing_result.get('ai_generated', False)),
-                'source': parsing_result.get('source', 'unknown')
-            }
-            
-            # Update product object with parsed_ingredients (for use in calculate_health_scores)
-            current_specs = product.get('specifications', {})
-            if isinstance(current_specs, str):
-                try:
-                    current_specs = json.loads(current_specs)
-                except:
-                    current_specs = {}
-            
-            current_specs['parsed_ingredients'] = parsed_ingredients_data
-            product['specifications'] = current_specs
-            
-            # Save parsed ingredients to database if not in dry run mode
+            # Show save status
             if not self.dry_run and parsing_result.get('matches'):
-                try:
-                    # Update the product in database
-                    update_data = {
-                        'specifications': current_specs,
-                        'updated_at': datetime.now().isoformat()
-                    }
-                    
                     print(f"   💾 Saving parsed ingredients to database...")
-                    result = self.supabase.table('products').update(update_data).eq('id', product.get('id')).execute()
-                    
-                    if hasattr(result, 'error') and result.error:
-                        print(f"   ❌ Failed to save parsed ingredients: {result.error}")
-                        self.stats['errors'].append(f"Parsed ingredients save error: {result.error}")
-                    else:
                         print(f"   ✅ Parsed ingredients saved to database")
-                except Exception as e:
-                    print(f"   ❌ Error saving parsed ingredients: {str(e)}")
-                    self.stats['errors'].append(f"Parsed ingredients save error: {str(e)}")
             elif self.dry_run:
                 print(f"   🔄 DRY RUN: Would save parsed ingredients to database")
             
+            self.stats['ingredients_parsed'] = True
             return parsing_result
             
         except Exception as e:
@@ -252,38 +192,24 @@ class SingleProductProcessor:
             
             print(f"   🏷️  Using barcode: {barcode}")
             
-            # Fetch additives using the existing fetcher
-            additives_tags = self.additives_fetcher.fetch_additives_from_off(barcode)
+            # Use ProductScorer to fetch additives
+            success = self.scorer.fetch_additives(product)
             
-            if additives_tags is not None:
+            if success:
+                additives_tags = product.get('additives_tags', [])
                 if additives_tags:
                     print(f"   ✅ Found {len(additives_tags)} additives: {additives_tags}")
                 else:
                     print(f"   ℹ️  No additives found for this product")
                 
-                # Update the product object with additives_tags (for both dry run and normal mode)
-                product['additives_tags'] = additives_tags
-                
-                # Update the database if not in dry run mode
-                if not self.dry_run:
-                    update_data = {'additives_tags': additives_tags}
-                    result = self.supabase.table('products').update(update_data).eq('id', product.get('id')).execute()
-                    
-                    if hasattr(result, 'error') and result.error:
-                        print(f"   ❌ Error updating additives_tags: {result.error}")
-                        self.stats['errors'].append(f"Additives update error: {result.error}")
-                        return False
-                    else:
-                        print(f"   ✅ Updated additives_tags in database")
-                        self.stats['additives_fetched'] = True
-                        return True
-                else:
+                if self.dry_run:
                     print(f"   🔄 DRY RUN: Would update additives_tags: {additives_tags}")
+                
                     self.stats['additives_fetched'] = True
                     return True
             else:
                 print(f"   ❌ Failed to fetch additives data")
-                self.stats['errors'].append("Failed to fetch additives from Open Food Facts")
+                self.stats['errors'].extend(self.scorer.get_stats()['errors'][-1:])
                 return False
                 
         except Exception as e:
@@ -304,7 +230,6 @@ class SingleProductProcessor:
         try:
             print(f"\n🔗 Creating additives relations...")
             
-            product_id = product.get('id')
             additives_tags = product.get('additives_tags', [])
             
             if not additives_tags:
@@ -313,18 +238,19 @@ class SingleProductProcessor:
             
             print(f"   🏷️  Creating relations for {len(additives_tags)} additives")
             
-            # Import the relation manager
-            from processors.helpers.additives.additives_relation_manager import AdditivesRelationManager
+            # Use ProductScorer to create additives relations
+            success = self.scorer.create_additives_relations(product)
             
+            if success:
+                # Get stats from relation manager for detailed output
+                from processors.helpers.additives.additives_relation_manager import AdditivesRelationManager
             relation_manager = AdditivesRelationManager(dry_run=self.dry_run)
-            
-            # Create relations for the product
+                product_id = product.get('id')
             stats = relation_manager.create_relations_for_product(
                 product_id, 
                 additives_tags, 
                 product.get('name', 'Unknown Product')
             )
-            
             print(f"   📊 Relations created: {stats['relations_created']}")
             print(f"   ✅ Additives found: {stats['additives_found']}")
             print(f"   ❌ Additives not found: {stats['additives_not_found']}")
@@ -353,53 +279,35 @@ class SingleProductProcessor:
             product_id = product.get('id')
             product_name = product.get('name', 'Unknown Product')
             
-            scores = {
-                'nutri_score': None,
-                'additives_score': None,
-                'nova_score': None,
-                'final_score': None,
-                'nutri_source': None,
-                'nova_source': None
-            }
+            # Use ProductScorer to calculate all scores
+            scores = self.scorer.calculate_health_scores(product)
             
-            # Calculate NutriScore
+            # Print detailed results
             print(f"   🍎 Calculating NutriScore...")
-            nutri_result = self.nutri_calc.calculate(product)
-            if isinstance(nutri_result, tuple):
-                scores['nutri_score'], scores['nutri_source'] = nutri_result
-            else:
-                scores['nutri_score'], scores['nutri_source'] = nutri_result, 'unknown'
-            
             print(f"      NutriScore: {scores['nutri_score']} (source: {scores['nutri_source']})")
             
-            # Calculate AdditivesScore
             print(f"   ⚠️  Calculating AdditivesScore...")
-            additives_result = self.additives_calc.calculate_from_product_additives(product_id)
+            if scores['additives_score'] is not None:
+                # Get detailed additives info if available
+                from processors.scoring.types.additives_score import AdditivesScoreCalculator
+                additives_calc = AdditivesScoreCalculator()
+                additives_result = additives_calc.calculate_from_product_additives(product_id)
             if additives_result:
-                scores['additives_score'] = additives_result['score']
                 additives_found = additives_result['additives_found']
                 risk_breakdown = additives_result['risk_breakdown']
-                
                 print(f"      AdditivesScore: {scores['additives_score']}")
                 print(f"      Additives found: {additives_found}")
                 print(f"      Risk breakdown: {risk_breakdown}")
             else:
                 print(f"      AdditivesScore: Could not calculate (no relations or unknown risk levels)")
             
-            # Calculate NovaScore
             print(f"   🥗 Calculating NovaScore...")
-            nova_result = self.nova_calc.calculate(product)
-            if isinstance(nova_result, tuple):
-                scores['nova_score'], scores['nova_source'] = nova_result
-            else:
-                scores['nova_score'], scores['nova_source'] = nova_result, 'unknown'
-            
             print(f"      NovaScore: {scores['nova_score']} (source: {scores['nova_source']})")
             
             # Calculate final health score
             print(f"   🏆 Calculating final health score...")
             
-            # Check if ingredients were extracted but not all matched
+            # Check if ingredients were extracted but not all matched (for display)
             specs = product.get('specifications', {})
             if isinstance(specs, str):
                 try:
@@ -415,20 +323,11 @@ class SingleProductProcessor:
                 if extracted_count > 0 and extracted_count > matched_count:
                     print(f"      ⚠️  Final Score: Cannot calculate - {extracted_count} ingredients extracted but only {matched_count} matched")
                     print(f"      ⚠️  Missing ingredient data would make score inaccurate")
-                    scores['final_score'] = None
-                    self.stats['scores_calculated'] = True
-                    return scores
-            
-            final_score = self.calculate_final_health_score(
-                scores['nutri_score'], 
-                scores['additives_score'], 
-                scores['nova_score']
-            )
-            scores['final_score'] = final_score
-            
-            if final_score is not None:
-                print(f"      Final Score: {final_score}")
-                print(f"      Formula: ({scores['nutri_score']} × 0.4) + ({scores['additives_score']} × 0.3) + ({scores['nova_score']} × 0.3) = {final_score}")
+                elif scores['final_score'] is not None:
+                    print(f"      Final Score: {scores['final_score']}")
+                    print(f"      Formula: ({scores['nutri_score']} × 0.4) + ({scores['additives_score']} × 0.3) + ({scores['nova_score']} × 0.3) = {scores['final_score']}")
+                    if scores.get('display_score') is not None and scores['display_score'] != scores['final_score']:
+                        print(f"      Display Score: {scores['display_score']} (capped at 49 due to high-risk additives)")
             else:
                 print(f"      Final Score: Cannot calculate (missing individual scores)")
             
@@ -438,13 +337,15 @@ class SingleProductProcessor:
         except Exception as e:
             print(f"❌ Error calculating health scores: {str(e)}")
             self.stats['errors'].append(f"Health scoring error: {str(e)}")
-            return {}
-    
-    def calculate_final_health_score(self, nutri, additives, nova):
-        """Calculate final health score from individual scores."""
-        if nutri is None or additives is None or nova is None:
-            return None
-        return int(round(nutri * 0.4 + additives * 0.3 + nova * 0.3))
+            return {
+                'nutri_score': None,
+                'additives_score': None,
+                'nova_score': None,
+                'final_score': None,
+                'display_score': None,
+                'nutri_source': None,
+                'nova_source': None
+            }
     
     def update_database(self, product_id: str, scores: Dict[str, Any]) -> bool:
         """
@@ -463,21 +364,22 @@ class SingleProductProcessor:
             if self.dry_run:
                 print(f"   🔄 DRY RUN: Would update database with:")
                 for key, value in scores.items():
-                    if value is not None:
+                    if value is not None and key not in ['nutri_source', 'nova_source']:
                         print(f"      {key}: {value}")
                 return True
             
+            # Use ProductScorer to update database
+            success = self.scorer.update_database(product_id, scores)
+            
+            if success:
+                # Build update_data for display
             update_data = {
                 'updated_at': datetime.now().isoformat()
             }
-            
-            # Add scores to update data
             if scores.get('final_score') is not None:
                 update_data['final_score'] = scores['final_score']
-
-                has_high_risk = self._check_product_high_risk_additives(product_id)
-                display_score = min(scores['final_score'], 49) if has_high_risk else scores['final_score']
-                update_data['display_score'] = display_score
+                if scores.get('display_score') is not None:
+                    update_data['display_score'] = scores['display_score']
             if scores.get('nutri_score') is not None:
                 update_data['nutri_score'] = scores['nutri_score']
                 update_data['nutri_score_set_by'] = scores.get('nutri_source', 'local')
@@ -488,21 +390,15 @@ class SingleProductProcessor:
                 update_data['nova_score'] = scores['nova_score']
                 update_data['nova_score_set_by'] = scores.get('nova_source', 'local')
             
-            # Remove None values
             update_data = {k: v for k, v in update_data.items() if v is not None}
-            
             print(f"   📝 Updating with: {update_data}")
-            
-            result = self.supabase.table('products').update(update_data).eq('id', product_id).execute()
-            
-            if hasattr(result, 'error') and result.error:
-                print(f"   ❌ Database update failed: {result.error}")
-                self.stats['errors'].append(f"Database update error: {result.error}")
-                return False
-            else:
                 print(f"   ✅ Database updated successfully")
                 self.stats['database_updated'] = True
-                return True
+            else:
+                print(f"   ❌ Database update failed")
+                self.stats['errors'].extend(self.scorer.get_stats()['errors'][-1:])
+            
+            return success
                 
         except Exception as e:
             print(f"❌ Error updating database: {str(e)}")
