@@ -65,21 +65,17 @@ class AdditivesScoreCalculator:
             risk_breakdown = {'free': 0, 'low': 0, 'moderate': 0, 'high': 0}
             total_score = 0
             
-            # Check if any additive has NULL/None risk level
+            # Process additives for scoring, skipping additives with unknown risk
+            skipped_unknown_risk = []
             for relation in additives:
                 additive = relation.get('additives', {})
                 if additive:
                     risk_level = additive.get('risk_level')
                     if risk_level is None or risk_level == '':
-                        print(f"Skipping product {product_id}: additive {additive.get('code')} has NULL risk level")
-                        return None
-            
-            # Process additives for scoring (now we know none have NULL risk)
-            for relation in additives:
-                additive = relation.get('additives', {})
-                if additive:
+                        skipped_unknown_risk.append(additive.get('code'))
+                        continue
+                    
                     additives_found += 1
-                    risk_level = additive.get('risk_level')
                     risk_score = self.get_additive_risk_score(additive)
                     total_score += risk_score
                     
@@ -108,11 +104,17 @@ class AdditivesScoreCalculator:
             if high_risk_additives:
                 final_score = min(final_score, 49)
             
+            if skipped_unknown_risk:
+                printable_codes = [code for code in skipped_unknown_risk if code]
+                if printable_codes:
+                    print(f"⚠️  Skipped additives with unknown risk level: {', '.join(printable_codes)}")
+            
             return {
                 'score': int(final_score),
                 'additives_found': additives_found,
                 'high_risk_additives': high_risk_additives,
-                'risk_breakdown': risk_breakdown
+                'risk_breakdown': risk_breakdown,
+                'skipped_unknown_risk': skipped_unknown_risk
             }
             
         except Exception as e:
