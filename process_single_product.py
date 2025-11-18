@@ -429,8 +429,9 @@ class SingleProductProcessor:
                 update_data = {
                     'updated_at': datetime.now().isoformat()
                 }
-                update_data['ai_parsed'] = self.scorer.last_parse_ai_generated
+                # Only display ai_parsed fields when AI was used in THIS run.
                 if self.scorer.last_parse_ai_generated:
+                    update_data['ai_parsed'] = True
                     ai_time = (
                         self.scorer.last_ai_parsed_time_used
                         or self.batch_ai_parsed_time
@@ -438,8 +439,6 @@ class SingleProductProcessor:
                         or datetime.now().isoformat()
                     )
                     update_data['ai_parsed_time'] = ai_time
-                else:
-                    update_data['ai_parsed_time'] = None
                 if scores.get('final_score') is not None:
                     update_data['final_score'] = scores['final_score']
                     if scores.get('display_score') is not None:

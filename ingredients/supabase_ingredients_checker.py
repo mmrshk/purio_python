@@ -609,9 +609,25 @@ class SupabaseIngredientsChecker:
 
         # AI PARSED
         # If product was already parsed by AI previously, reuse stored results to avoid re-processing
-        # reused = self._reuse_parsed_ai_results(specs, product_name)
-        # if reused is not None:
-        #     return reused
+        reused = None
+        try:
+            parsed_prev = specs.get('parsed_ingredients', {})
+            if isinstance(parsed_prev, dict) and parsed_prev.get('ai_generated'):
+                prev_extracted = parsed_prev.get('extracted_ingredients', []) or []
+                prev_matches = parsed_prev.get('matches', []) or []
+                # Consider only visible matches when comparing counts
+                visible_prev_matches = []
+                for m in prev_matches:
+                    data = (m.get('data') or {})
+                    if data.get('visible', True):
+                        visible_prev_matches.append(m)
+                if prev_extracted and len(visible_prev_matches) == len(prev_extracted):
+                    # Fully matched previously with AI-generated results → reuse, skip AI calls
+                    reused = self._reuse_parsed_ai_results(specs, product_name)
+        except Exception:
+            reused = None
+        if reused is not None:
+            return reused
 
         ingredients_text = specs.get('ingredients', '')
         extracted_ingredients = []

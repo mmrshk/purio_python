@@ -52,6 +52,8 @@ class IngredientsInserter:
         self.supabase = create_client(supabase_url, supabase_key)
         self._ingredient_processor: Optional[IngredientAIProcessor] = ingredient_processor
         self._ai_processing_enabled = enable_ai_processing
+        # In-memory cache to avoid repeated AI enrichment calls within the same run
+        self._ai_cache: Dict[str, Dict[str, Any]] = {}
 
         # Statistics
         self.stats = {
@@ -99,6 +101,72 @@ class IngredientsInserter:
                 'ai_result': None
             }
 
+        # Basic, low-risk prechecks to avoid AI calls:
+        # 1) Blacklist gate on raw and normalized forms
+        candidate_norm = candidate.lower().strip()
+        if is_blacklisted(candidate_norm):
+            return {
+                'success': False,
+                'action': 'skipped',
+                'reason': 'ai_rejected',
+                'message': 'blacklisted term (generic/role/additive)',
+                'ai_result': None
+            }
+
+        # 2) Exact DB existence check (English or Romanian name)
+        try:
+            existing = self._check_existing_ingredient(candidate, candidate)
+            if existing:
+                return {
+                    'success': False,
+                    'action': 'skipped',
+                    'reason': 'duplicate',
+                    'ingredient_id': existing.get('id'),
+                    'message': f"Ingredient already exists: {existing.get('name') or existing.get('ro_name') or candidate}",
+                    'ai_result': None
+                }
+        except Exception:
+            # If DB check fails, continue with normal flow
+            pass
+
+        # 3) In-memory AI cache check to avoid repeated enrich calls within same run
+        cache_key = f"enrich|{source_language.lower().strip()}|{candidate_norm}"
+        cached = self._ai_cache.get(cache_key)
+        if cached:
+            cached_is_ingredient = bool(cached.get('is_ingredient'))
+            if not cached_is_ingredient:
+                return {
+                    'success': False,
+                    'action': 'skipped',
+                    'reason': 'ai_rejected',
+                    'message': cached.get('reason') or 'AI classified candidate as non-ingredient (cache)',
+                    'ai_result': cached
+                }
+            # Proceed to insertion using cached data
+            name = cached.get('name') or candidate
+            ro_name = cached.get('ro_name') or candidate
+            # Final blacklist guard
+            if is_blacklisted((name or '').lower().strip()) or is_blacklisted((ro_name or '').lower().strip()):
+                return {
+                    'success': False,
+                    'action': 'skipped',
+                    'reason': 'ai_rejected',
+                    'message': 'blacklisted term (generic/role/additive)',
+                    'ai_result': cached
+                }
+            insertion_result = self.insert_ingredient(
+                name=name,
+                ro_name=ro_name,
+                nova_score=cached.get('nova_score'),
+                created_by=created_by,
+                visible=visible,
+                description=cached.get('description'),
+                ro_description=cached.get('ro_description'),
+                risk_level=cached.get('risk_level')
+            )
+            insertion_result['ai_result'] = cached
+            return insertion_result
+
         processor = self._get_ingredient_processor()
         if not processor:
             return self.insert_ingredient(
@@ -125,6 +193,8 @@ class IngredientsInserter:
             }
 
         if not ai_result.is_ingredient:
+            # Cache negative result
+            self._ai_cache[cache_key] = ai_result.to_dict()
             return {
                 'success': False,
                 'action': 'skipped',
@@ -146,6 +216,8 @@ class IngredientsInserter:
         name_norm = ai_result.name.lower().strip()
         ro_norm = (ai_result.ro_name or candidate).lower().strip()
         if is_blacklisted(name_norm) or is_blacklisted(ro_norm):
+            # Cache negative result
+            self._ai_cache[cache_key] = ai_result.to_dict()
             return {
                 'success': False,
                 'action': 'skipped',
@@ -165,7 +237,10 @@ class IngredientsInserter:
             risk_level=ai_result.risk_level
         )
 
-        insertion_result['ai_result'] = ai_result.to_dict()
+        # Cache positive result
+        cached_payload = ai_result.to_dict()
+        self._ai_cache[cache_key] = cached_payload
+        insertion_result['ai_result'] = cached_payload
         return insertion_result
 
     def insert_ingredient(

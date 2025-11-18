@@ -475,15 +475,13 @@ class ProductScorer:
             update_data = {
                 'updated_at': datetime.now().isoformat()
             }
+            # Only set ai_parsed fields when AI was used in THIS run.
+            # Otherwise, preserve existing DB values (do not overwrite to False/None).
             if self.last_parse_ai_generated:
                 update_data['ai_parsed'] = True
                 ai_time = self.batch_ai_parsed_time or datetime.now().isoformat()
                 update_data['ai_parsed_time'] = ai_time
                 self.last_ai_parsed_time_used = ai_time
-            else:
-                update_data['ai_parsed'] = False
-                update_data['ai_parsed_time'] = None
-                self.last_ai_parsed_time_used = None
 
             # Add scores to update data
             if scores.get('final_score') is not None:
