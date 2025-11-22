@@ -280,11 +280,21 @@ Rule 5 — Ingredients must be SINGLE SUBSTANCES (even if processed — OK, as l
 
 Summary: An ingredient is a single, specific substance that can legally appear exactly as written on an ingredient list. A product is a combination of ingredients. A category is a generic term that does not meet labeling regulations.
 
-DO NOT create ingredients for the following generic categories, mixtures, processing roles, additives, or placeholders. If the candidate matches any of these, set `is_ingredient` to false and provide a brief `reason`:
-- organs; seafood; fish roe; fruit mix; vanilla-flavored cream; carob gum; Roshen biscuits; invert sugar; palmier; humectant; spice extract; gum arabic; capsicum extract; proteins from; plant broth; peanut filling; Red 17; dextrin; sorbitol syrup; sponge cake; animal protein; whipped cream; carmine; Beetroot Red; emulsifiers; vanilla pasta; animal proteins; spice extracts; wafers; smoke flavor; thickeners; vegetable fats; dehydrated vegetables; Brilliant Blue FCF; tomato pasta; peel; pork cracklings; liver; whipped cream powder; protein from; vegetable fiber.
-- compound salt/acid salts when only roles are specified (e.g., sodium polyphosphates, diphosphates, potassium citrates, sodium acetate, potassium chloride, calcium carbonate, calcium lactate, sodium lactate, sodium erythorbate, ammonium bicarbonate).
-- named extracts/colors/flavors used as roles without a specific food identity (e.g., anthocyanin, curcumin, carotene, beta-carotene, processed Eucheuma seaweed).
-- additives in general (roles such as emulsifier, stabilizer, colorant, sweetener, preservative, flavoring, raising agent), including E-number additives (e.g., E100–E999). These should NOT be created as standalone ingredients; mark `is_ingredient` = false and give reason "additive".
+DO NOT create ingredients for the following generic categories, mixtures, processing roles, additives, finished products, or placeholders. If the candidate matches any of these, set `is_ingredient` to false and provide a brief `reason`:
+
+Generic categories (too broad): herbs; berries; vegetables; meat; oils; mushrooms; sprouts; wild berry; fruit puree; semi-skimmed; dietary fiber.
+
+Finished products (not ingredients): tomato paste; bread; biscuits; biscuit crumbs; breadcrumbs; yogurt; cheese varieties (mozzarella, cheddar, edam, ricotta, emmental, pecorino romano, parmigiano reggiano, blue cheese, processed cheese, etc.); ham (prague ham, cured ham, smoked ham); salami; pepperoni; pretzel; noodles; marshmallow; jam (apricot jam); pickled items (pickled cucumbers, pickled jalapenos); sour cabbage; sour soup; sour dough; fermented dough; dough; pasteurized egg dough; chocolate (dark chocolate, bitter chocolate, coating chocolate, cocoa couverture); chocolate cream; cocoa cream; chocolate sauce; chocolate syrup; cocoa sauce; chocolate glaze; cocoa glaze; dark chocolate glaze; cocoa coating flakes; cocoa biscuits; vegetable spread; creme fraiche; sweetened condensed milk; sweet cheese; pressed cheese; fresh cow cheese; cow cheese; fruit drink yogurt; scrambled pork fat; surimi; bouillon; fish broth; beef bone broth; fish soup; wine (white aligoté wine, port wine, pale lager, tequila, whisky, vodka, amaretto, cointreau); grape pomace spirit; champagne pomace; espresso; nescafé; sparkling spring water; sparkling mineral water; natural grape juice; berry sauce; berry juice; syrup; natural beech smoke; vine.
+
+Generic/non-specific terms: tea extract; tea flower; paprika oil; seasoned oil; oil; whole flakes; cereal flakes; flower petals; seasoned mushrooms; dried herbs.
+
+Additives and compounds: mannitol; annatto; alpha-tocopherol; organs; seafood; fish roe; fruit mix; vanilla-flavored cream; carob gum; Roshen biscuits; invert sugar; palmier; humectant; spice extract; gum arabic; capsicum extract; proteins from; plant broth; peanut filling; Red 17; dextrin; sorbitol syrup; sponge cake; animal protein; whipped cream; carmine; Beetroot Red; emulsifiers; vanilla pasta; animal proteins; spice extracts; wafers; smoke flavor; thickeners; vegetable fats; dehydrated vegetables; Brilliant Blue FCF; tomato pasta; peel; pork cracklings; liver; whipped cream powder; protein from; vegetable fiber.
+
+Compound salt/acid salts when only roles are specified (e.g., sodium polyphosphates, diphosphates, potassium citrates, sodium acetate, potassium chloride, calcium carbonate, calcium lactate, sodium lactate, sodium erythorbate, ammonium bicarbonate).
+
+Named extracts/colors/flavors used as roles without a specific food identity (e.g., anthocyanin, curcumin, carotene, beta-carotene, processed Eucheuma seaweed).
+
+Additives in general (roles such as emulsifier, stabilizer, colorant, sweetener, preservative, flavoring, raising agent), including E-number additives (e.g., E100–E999). These should NOT be created as standalone ingredients; mark `is_ingredient` = false and give reason "additive".
 
 Respond with a single JSON object using this schema and NO extra text:
 {{

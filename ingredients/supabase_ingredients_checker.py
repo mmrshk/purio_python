@@ -270,7 +270,7 @@ class SupabaseIngredientsChecker:
         except Exception:
             pass
 
-    def _try_ai(self, product_name: str, description: str, ingredients_text: str = None) -> List[str]:
+    def _try_ai(self, product_name: str, description: str, ingredients_text: str = None) -> Tuple[List[str], Optional[str]]:
         """
         Try AI parsing. If ingredients_text is provided, use it instead of product name.
 
@@ -280,10 +280,10 @@ class SupabaseIngredientsChecker:
             ingredients_text: Optional ingredients text to parse (preferred over product name)
 
         Returns:
-            List of extracted ingredients
+            Tuple of (list of extracted ingredients, error message if any)
         """
         if not (self.use_ai_fallback and self.ai_parser):
-            return []
+            return [], None
 
         # If ingredients text is provided, use it as context instead of product name
         if ingredients_text:
@@ -297,12 +297,13 @@ class SupabaseIngredientsChecker:
             # Fall back to product name if no ingredients text
             ai_result = self.ai_parser.parse_ingredients_from_name(product_name, description)
 
+        error = ai_result.get('error')
         if ai_result.get('extracted_ingredients'):
             ai_ings = ai_result['extracted_ingredients']
             self.stats['products_with_ai_ingredients'] += 1
             self._log_ai_ingredients(ai_ings)
-            return ai_ings
-        return []
+            return ai_ings, error
+        return [], error
 
     def _try_ai_from_text(self, context: str) -> Dict[str, Any]:
         """
@@ -647,26 +648,36 @@ class SupabaseIngredientsChecker:
         if force_ai_enabled:
             print("🤖 Force AI parsing enabled – using AI results.")
             description = specs.get('description', '') or product.get('description', '')
-            ai_ings = self._try_ai(product_name, description, ingredients_text=ingredients_text if ingredients_text else None)
+            ai_ings, ai_error = self._try_ai(product_name, description, ingredients_text=ingredients_text if ingredients_text else None)
             if ai_ings:
                 extracted_ingredients = ai_ings
                 source = 'ai_parser'
                 print(f"   ✅ AI (forced) extracted {len(extracted_ingredients)} ingredients")
             else:
-                print("   ❌ Forced AI parsing failed; falling back to extracted text")
+                error_msg = f"   ❌ Forced AI parsing failed; falling back to extracted text"
+                if ai_error:
+                    error_msg += f"\n   ⚠️  AI Error: {ai_error}"
+                else:
+                    error_msg += "\n   ⚠️  AI returned no ingredients (empty response or parsing failed)"
+                print(error_msg)
                 force_ai_enabled = False  # Allow normal fallback logic below
 
         # If no ingredients found and AI fallback is enabled, try AI
         if not extracted_ingredients and self.use_ai_fallback and self.ai_parser:
             print(f"🤖 No ingredients found, trying AI parsing for: {product_name}")
             description = specs.get('description', '') or product.get('description', '')
-            ai_ings = self._try_ai(product_name, description, ingredients_text=None)
+            ai_ings, ai_error = self._try_ai(product_name, description, ingredients_text=None)
             source = 'ai_parser'
             if ai_ings:
                 extracted_ingredients = ai_ings
                 print(f"   ✅ AI extracted {len(extracted_ingredients)} ingredients")
             else:
-                print("   ❌ AI could not extract ingredients")
+                error_msg = "   ❌ AI could not extract ingredients"
+                if ai_error:
+                    error_msg += f"\n   ⚠️  AI Error: {ai_error}"
+                else:
+                    error_msg += " (empty response or parsing failed)"
+                print(error_msg)
 
         # First pass matching (local counters, no stats yet)
         matches, nova_scores, matched_count, not_matched_count = self._compute_matches(extracted_ingredients)
@@ -677,7 +688,7 @@ class SupabaseIngredientsChecker:
             print("🤖 No fuzzy matches found, trying AI parsing to improve ingredient list")
             description = specs.get('description', '') or product.get('description', '')
             # Use ingredients_text if available (better than product name), otherwise fall back to product name
-            ai_ings = self._try_ai(product_name, description, ingredients_text=ingredients_text if ingredients_text else None)
+            ai_ings, ai_error = self._try_ai(product_name, description, ingredients_text=ingredients_text if ingredients_text else None)
             source = 'ai_parser'
             if ai_ings:
                 extracted_ingredients = ai_ings
@@ -685,7 +696,12 @@ class SupabaseIngredientsChecker:
                 # Recompute matches with AI ingredients
                 matches, nova_scores, matched_count, not_matched_count = self._compute_matches(extracted_ingredients)
             else:
-                print("   ❌ AI could not improve ingredient extraction")
+                error_msg = "   ❌ AI could not improve ingredient extraction"
+                if ai_error:
+                    error_msg += f"\n   ⚠️  AI Error: {ai_error}"
+                else:
+                    error_msg += " (empty response or parsing failed)"
+                print(error_msg)
 
         # Optionally insert unmatched ingredients into DB (regardless of source)
         # If ingredients were extracted but not matched, they should be added to DB

@@ -57,7 +57,7 @@ class NutriScoreCalculator:
             'Accept': 'application/json',
             'Accept-Language': 'en-US,en;q=0.9',
         }
-        
+
         if ean:
             url = f"https://world.openfoodfacts.org/api/v0/product/{ean}.json"
             try:
@@ -141,45 +141,45 @@ class NutriScoreCalculator:
     def calculate_negative_points(self, nutritional_data):
         """Calculate negative points (N) based on official Nutri-Score thresholds."""
         n_points = 0
-        
+
         # Energy (convert kcal to kJ if needed)
         energy_kcal = self.extract_nutritional_value(nutritional_data, 'calories_per_100g_or_100ml')
         if energy_kcal > 0:
             # If energy is in kcal, convert to kJ (1 kcal = 4.184 kJ)
             energy_kj = energy_kcal * 4.184
             n_points += self.get_points_for_value(energy_kj, self.NEGATIVE_POINTS_THRESHOLDS['energy'])
-        
+
         # Sugars
         sugars = self.extract_nutritional_value(nutritional_data, 'sugar')
         n_points += self.get_points_for_value(sugars, self.NEGATIVE_POINTS_THRESHOLDS['sugars'])
-        
+
         # Saturated fat (from fat field - we'll need to extract saturated fat from total fat)
         # For now, using total fat as approximation
         fat = self.extract_nutritional_value(nutritional_data, 'fat')
         # Assuming 30% of total fat is saturated fat (rough approximation)
         saturated_fat = fat * 0.3 if fat > 0 else 0
         n_points += self.get_points_for_value(saturated_fat, self.NEGATIVE_POINTS_THRESHOLDS['saturated_fat'])
-        
+
         # Sodium - not available in current data structure
         # Nutri-Score calculation will be less accurate without sodium data
         # This is a limitation of the current data structure
         sodium = 0
         n_points += self.get_points_for_value(sodium, self.NEGATIVE_POINTS_THRESHOLDS['sodium'])
-        
+
         return n_points
 
     def calculate_positive_points(self, nutritional_data, specifications_data):
         """Calculate positive points (P) based on official Nutri-Score thresholds."""
         p_points = 0
-        
+
         # Fiber (from specifications)
         fiber = self.extract_specification_value(specifications_data, 'fiber')
         p_points += self.get_points_for_value(fiber, self.POSITIVE_POINTS_THRESHOLDS['fiber'])
-        
+
         # Protein (from nutritional)
         protein = self.extract_nutritional_value(nutritional_data, 'protein')
         p_points += self.get_points_for_value(protein, self.POSITIVE_POINTS_THRESHOLDS['protein'])
-        
+
         return p_points
 
     def calculate_final_nutriscore(self, n_points, p_points, fruit_veg_percentage=0):
@@ -194,7 +194,7 @@ class NutriScoreCalculator:
                 final_score = n_points - fiber_points
             else:
                 final_score = n_points - p_points
-        
+
         # Map to Nutri-Score grade
         if final_score <= -1:
             return 'a'
@@ -245,13 +245,13 @@ class NutriScoreCalculator:
 
         # Calculate negative points (N)
         n_points = self.calculate_negative_points(nutritional_data)
-        
+
         # Calculate positive points (P)
         p_points = self.calculate_positive_points(nutritional_data, specifications_data)
-        
+
         # Calculate final Nutri-Score grade
         final_grade = self.calculate_final_nutriscore(n_points, p_points)
-        
+
         # Map to numeric score (20-100 range)
         numeric_score = self.NUTRISCORE_MAP.get(final_grade, 50)
         nutriscore_score_set_by = 'local'

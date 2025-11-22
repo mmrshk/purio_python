@@ -168,6 +168,12 @@ class AIIngredientsParser:
 
 {context}
 
+⭐ CRITICAL RULE: An ingredient is a single, specific substance that can legally appear exactly as written on an ingredient list. Products and categories are NOT ingredients.
+
+✔️ INGREDIENTS: "dried tomatoes", "black pepper", "sunflower seed oil", "grape juice", "hydrolyzed vegetable protein", "soy fiber", "hazelnut pieces", "whey powder"
+❌ PRODUCTS (NOT ingredients): "bread", "pepperoni", "tofu", "apricot jam", "pickled cucumbers", "yogurt", "pale lager", "chocolate sauce", "pasta de tomate", "branza mozzarella", "sunca", "salam", "paine", "iaurt", "biscuiti", "ciocolată", "dulceata de caise"
+❌ CATEGORIES (NOT ingredients): "herbs", "berries", "vegetables", "meat", "oils", "mushrooms", "wild berry", "fruit puree", "verdețuri", "fructe de padure", "uleiuri", "ciuperci"
+
 Please extract ONLY the edible ingredients and additives from the list above.
 - Normalize ingredient names (e.g., "frunze de ceai verde" → "green tea leaves" or "ceai verde")
 - Extract percentages and quantities separately, do not include them in ingredient names
@@ -184,7 +190,9 @@ Please extract ONLY the edible ingredients and additives from the list above.
 - When a label is followed by an actual ingredient (e.g., "stabilizator: trifosfati", "agent de afanare (bicarbonat de amoniu)"), output only the ingredient after the label
 - If parentheses contain the real ingredient, include the ingredient inside the parentheses
 - When you see spreads or creams like "crema de alune" or "hazelnut cream", output only the base ingredient ("alune", "hazelnut")
-- DO NOT output generic categories, mixtures, role-only terms or placeholders as ingredients (e.g., "organs", "seafood", "fruit mix", "vanilla-flavored cream", "humectant", "spice extract", "gum arabic", "capsicum extract", "plant broth", "peanut filling", "sponge cake", "animal protein", "whipped cream", "vanilla pasta", "animal proteins", "spice extracts", "wafers", "thickeners", "vegetable fats", "dehydrated vegetables", "tomato pasta", "peel", "pork cracklings", "liver", "whipped cream powder", "vegetable fiber")
+- DO NOT output finished products: bread, yogurt, cheese varieties (mozzarella, cheddar, edam, ricotta, etc.), ham, salami, pepperoni, chocolate products, wine, spirits, jam, pickled items, dough, broth, soup, etc. (English and Romanian: "paine", "iaurt", "branza", "sunca", "salam", "ciocolată", "vin", "dulceata", "masa", "bulion", "supa")
+- DO NOT output generic categories: herbs, berries, vegetables, meat, oils, mushrooms, sprouts, wild berry, fruit puree, etc. (English and Romanian: "verdețuri", "fructe de padure", "uleiuri", "ciuperci")
+- DO NOT output generic/non-specific terms: tea extract, paprika oil, syrup, whole flakes, cereal flakes, etc. (English and Romanian: "extract de ceai", "ulei de paprika", "sirop", "fulgi integrali")
 - DO NOT output role-only salts/acid salts or colorants when not tied to a specific food identity (e.g., "sodium polyphosphates", "diphosphates", "potassium citrates", "sodium acetate", "potassium chloride", "calcium carbonate", "calcium lactate", "sodium lactate", "sodium erythorbate", "ammonium bicarbonate", "anthocyanin", "curcumin", "beta-carotene", "processed Eucheuma seaweed")
 - DO NOT output additives as ingredients (roles such as emulsifier, stabilizer, colorant, sweetener, preservative, flavoring, raising agent), including E-number additives (E100–E999). Skip items like "emulsifiers", "smoke flavor", "carmine/Beetroot Red/Brilliant Blue FCF", "polyglycerol esters of fatty acids", "proteins from", "protein from".
 - Return each ingredient in lowercase, without duplicates
@@ -198,6 +206,12 @@ Do not include explanations, just the JSON array. If you cannot determine ingred
             return f"""You are a food ingredient expert. Based on the product name and description, extract the most likely ingredients.
 
 Product: {context}
+
+⭐ CRITICAL RULE: An ingredient is a single, specific substance that can legally appear exactly as written on an ingredient list. Products and categories are NOT ingredients.
+
+✔️ INGREDIENTS: "dried tomatoes", "black pepper", "sunflower seed oil", "grape juice", "hydrolyzed vegetable protein", "soy fiber", "hazelnut pieces", "whey powder"
+❌ PRODUCTS (NOT ingredients): "bread", "pepperoni", "tofu", "apricot jam", "pickled cucumbers", "yogurt", "pale lager", "chocolate sauce", "pasta de tomate", "branza mozzarella", "sunca", "salam", "paine", "iaurt", "biscuiti", "ciocolată", "dulceata de caise"
+❌ CATEGORIES (NOT ingredients): "herbs", "berries", "vegetables", "meat", "oils", "mushrooms", "wild berry", "fruit puree", "verdețuri", "fructe de padure", "uleiuri", "ciuperci"
 
 Please extract ingredients that are most likely to be in this product. Consider:
 1. Common ingredients for this type of product
@@ -218,7 +232,9 @@ Important rules:
 - When a label is followed by an actual ingredient (e.g., "stabilizator: trifosfati", "agent de afanare (bicarbonat de amoniu)"), output only the ingredient after the label
 - If parentheses contain the real ingredient, include the ingredient inside the parentheses
 - When you see spreads or creams like "crema de alune" or "hazelnut cream", output only the base ingredient ("alune", "hazelnut")
-- DO NOT output generic categories, mixtures, role-only terms or placeholders as ingredients (examples: "organs", "seafood", "fruit mix", "vanilla-flavored cream", "humectant", "spice extract", "gum arabic", "capsicum extract", "plant broth", "peanut filling", "sponge cake", "animal protein", "whipped cream", "vanilla pasta", "animal proteins", "spice extracts", "wafers", "thickeners", "vegetable fats", "dehydrated vegetables", "tomato pasta", "peel", "pork cracklings", "liver", "whipped cream powder", "vegetable fiber")
+- DO NOT output finished products: bread, yogurt, cheese varieties (mozzarella, cheddar, edam, ricotta, etc.), ham, salami, pepperoni, chocolate products, wine, spirits, jam, pickled items, dough, broth, soup, etc. (English and Romanian: "paine", "iaurt", "branza", "sunca", "salam", "ciocolată", "vin", "dulceata", "masa", "bulion", "supa")
+- DO NOT output generic categories: herbs, berries, vegetables, meat, oils, mushrooms, sprouts, wild berry, fruit puree, etc. (English and Romanian: "verdețuri", "fructe de padure", "uleiuri", "ciuperci")
+- DO NOT output generic/non-specific terms: tea extract, paprika oil, syrup, whole flakes, cereal flakes, etc. (English and Romanian: "extract de ceai", "ulei de paprika", "sirop", "fulgi integrali")
 - DO NOT output role-only salts/acid salts or colorants not tied to a specific food identity (e.g., "sodium polyphosphates", "diphosphates", "potassium citrates", "sodium acetate", "potassium chloride", "calcium carbonate", "calcium lactate", "sodium lactate", "sodium erythorbate", "ammonium bicarbonate", "anthocyanin", "curcumin", "beta-carotene", "processed Eucheuma seaweed")
 - DO NOT output additives as ingredients (roles such as emulsifier, stabilizer, colorant, sweetener, preservative, flavoring, raising agent), including E-number additives (E100–E999). Skip items like "emulsifiers", "smoke flavor", "carmine/Beetroot Red/Brilliant Blue FCF", "polyglycerol esters of fatty acids", "proteins from", "protein from".
 - Return each ingredient in lowercase, without duplicates

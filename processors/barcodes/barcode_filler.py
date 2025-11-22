@@ -13,16 +13,16 @@ def get_barcode_from_openfoodfacts(product_name):
         "action": "process",
         "json": 1
     }
-    
+
     # Configure headers to be more respectful to the API
     headers = {
         'User-Agent': 'FoodFacts-HealthScoring/1.0 (https://github.com/mmrshk/food_facts)',
         'Accept': 'application/json',
         'Accept-Language': 'en-US,en;q=0.9',
     }
-    
+
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=15)
+        response = requests.get(url, headers=headers, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
         products = data.get('products', [])
@@ -43,7 +43,7 @@ def get_ean_from_auchan_api(product_url=None, external_id=None):
     try:
         if external_id:
             api_url = f"https://www.auchan.ro/api/catalog_system/pub/products/search?fq=productId:{external_id}"
-            resp = requests.get(api_url, timeout=15)
+            resp = requests.get(api_url, timeout=5)
             resp.raise_for_status()
             data = resp.json()
             if data and isinstance(data, list):
