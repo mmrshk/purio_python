@@ -63,7 +63,8 @@ class LinkCollectorV2:
                 'price': None,
                 'list_price': None,
                 'ingredients': '',
-                'nutritional_info': {}
+                'nutritional_info': {},
+                'external_id': ''
             }
 
             # Get EAN and price from items
@@ -92,6 +93,10 @@ class LinkCollectorV2:
                             name = spec.get('name', '')
                             value = spec.get('values', [''])[0]
                             product_data['nutritional_info'][name] = value
+
+            # Extract external_id (Cod produs)
+            product_id = product.get('productId', '')
+            product_data['external_id'] = product_id
 
             return product_data
         except Exception as e:

@@ -18,8 +18,11 @@ def get_products_with_barcodes():
     Get all products that have barcodes from Supabase and list them.
     """
     try:
+        # Print the API URL being used
+        print(f"\nUsing Supabase URL: {supabase_url}/rest/v1/Products?select=*&barcode=not.is.null")
+        
         # Get all products with barcodes
-        result = supabase.table('Products').select('*').not_.is_('barcode', 'null').execute()
+        result = supabase.table('products').select('*').not_.is_('barcode', 'null').execute()
         
         if hasattr(result, 'error') and result.error:
             print(f"Error fetching products: {result.error}")
